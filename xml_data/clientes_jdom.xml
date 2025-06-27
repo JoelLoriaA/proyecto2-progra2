@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<clientes>
+  <cliente id="1">
+    <nombre>Ana</nombre>
+    <apellido>Sánchez</apellido>
+    <segundoApellido>Gómez</segundoApellido>
+    <telefono>8888-1111</telefono>
+    <direccion>Cartago</direccion>
+    <email>ana@gmail.com</email>
+  </cliente>
+  <cliente id="2">
+    <nombre>Luis</nombre>
+    <apellido>Rodríguez</apellido>
+    <segundoApellido>Pérez</segundoApellido>
+    <telefono>8888-2222</telefono>
+    <direccion>San José</direccion>
+    <email>luis@gmail.com</email>
+  </cliente>
+  <cliente id="3">
+    <nombre>Carla</nombre>
+    <apellido>Jiménez</apellido>
+    <segundoApellido>Solís</segundoApellido>
+    <telefono>8888-3333</telefono>
+    <direccion>Heredia</direccion>
+    <email>carla@gmail.com</email>
+  </cliente>
+  <cliente id="4">
+    <nombre>José</nombre>
+    <apellido>Hernández</apellido>
+    <segundoApellido>Mora</segundoApellido>
+    <telefono>8888-4444</telefono>
+    <direccion>Alajuela</direccion>
+    <email>jose@gmail.com</email>
+  </cliente>
+  <cliente id="5">
+    <nombre>Sofía</nombre>
+    <apellido>Vargas</apellido>
+    <segundoApellido>Castro</segundoApellido>
+    <telefono>8888-5555</telefono>
+    <direccion>Puntarenas</direccion>
+    <email>sofia@gmail.com</email>
+  </cliente>
+  <cliente id="6">
+    <nombre>Ana</nombre>
+    <apellido>Sánchez</apellido>
+    <segundoApellido>Gómez</segundoApellido>
+    <telefono>8888-1111</telefono>
+    <direccion>Cartago</direccion>
+    <email>ana@gmail.com</email>
+  </cliente>
+  <cliente id="7">
+    <nombre>Luis</nombre>
+    <apellido>Rodríguez</apellido>
+    <segundoApellido>Pérez</segundoApellido>
+    <telefono>8888-2222</telefono>
+    <direccion>San José</direccion>
+    <email>luis@gmail.com</email>
+  </cliente>
+  <cliente id="8">
+    <nombre>Carla</nombre>
+    <apellido>Jiménez</apellido>
+    <segundoApellido>Solís</segundoApellido>
+    <telefono>8888-3333</telefono>
+    <direccion>Heredia</direccion>
+    <email>carla@gmail.com</email>
+  </cliente>
+  <cliente id="9">
+    <nombre>José</nombre>
+    <apellido>Hernández</apellido>
+    <segundoApellido>Mora</segundoApellido>
+    <telefono>8888-4444</telefono>
+    <direccion>Alajuela</direccion>
+    <email>jose@gmail.com</email>
+  </cliente>
+  <cliente id="10">
+    <nombre>Sofía</nombre>
+    <apellido>Vargas</apellido>
+    <segundoApellido>Castro</segundoApellido>
+    <telefono>8888-5555</telefono>
+    <direccion>Puntarenas</direccion>
+    <email>sofia@gmail.com</email>
+  </cliente>
+</clientes>
