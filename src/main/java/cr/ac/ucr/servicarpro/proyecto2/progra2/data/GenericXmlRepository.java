@@ -1,17 +1,20 @@
 package cr.ac.ucr.servicarpro.proyecto2.progra2.data;
 
+import java.io.File;
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Optional;
+import java.util.function.Function;
+
 import org.jdom2.Document;
 import org.jdom2.Element;
 import org.jdom2.JDOMException;
 import org.jdom2.input.SAXBuilder;
 import org.jdom2.output.Format;
 import org.jdom2.output.XMLOutputter;
-
-import java.io.File;
-import java.io.IOException;
-import java.io.PrintWriter;
-import java.util.*;
-import java.util.function.Function;
 
 /**
  * Repositorio XML genérico usando JDOM para cualquier entidad.
@@ -20,7 +23,7 @@ public class GenericXmlRepository<T, K extends Comparable<K>> {
 
     private final Document document;
     private final Element root;
-    private final String filePath;
+    public String filePath;
     private final Function<T, K> keyExtractor;
     private final Comparator<T> comparator;
     private final EntityMapper<T, K> mapper;
@@ -152,9 +155,37 @@ public class GenericXmlRepository<T, K extends Comparable<K>> {
                 System.err.println(" No se pudo crear la carpeta: " + parentDir.getPath());
             }
         }
-
+        
+        System.out.println("[XML] Guardando en: " + file.getAbsolutePath());
         try (PrintWriter writer = new PrintWriter(file)) {
             outputter.output(this.document, writer);
         }
     }
+    
+        public void save(T entity) throws IOException {
+        insertOrUpdate(entity);
+    }
+
+    public void delete(K key) throws IOException {
+        List<Element> elements = root.getChildren(entityTag);
+        Element toRemove = null;
+
+        for (Element e : elements) {
+            K existingKey = mapper.getKeyFromElement(e);
+            if (key.compareTo(existingKey) == 0) {
+                toRemove = e;
+                break;
+            }
+        }
+
+        if (toRemove != null) {
+            root.removeContent(toRemove);
+            save();
+        }
+    }
+
+    public T findById(K key) {
+        return findByKey(key).orElse(null);
+    }
+
 }
