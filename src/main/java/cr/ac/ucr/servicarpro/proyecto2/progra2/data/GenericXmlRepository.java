@@ -79,9 +79,28 @@ public class GenericXmlRepository<T, K extends Comparable<K>> {
     }
 
     public Optional<T> findByKey(K key) {
-        return findAll().stream()
-                .filter(entity -> key.equals(keyExtractor.apply(entity)))
-                .findFirst();
+        List<Element> elements = root.getChildren(entityTag);
+
+        int left = 0;
+        int right = elements.size() - 1;
+
+        while (left <= right) {
+            int mid = left + (right - left) / 2;
+            Element midElement = elements.get(mid);
+            K midKey = mapper.getKeyFromElement(midElement);
+
+            int comparison = key.compareTo(midKey);
+
+            if (comparison == 0) {
+                return Optional.of(mapper.elementToEntity(midElement));
+            } else if (comparison < 0) {
+                right = mid - 1;
+            } else {
+                left = mid + 1;
+            }
+        }
+
+        return Optional.empty();
     }
 
     public int getNextId() {

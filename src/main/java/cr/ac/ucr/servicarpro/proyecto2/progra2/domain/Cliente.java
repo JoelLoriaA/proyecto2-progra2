@@ -4,14 +4,6 @@
  */
 package cr.ac.ucr.servicarpro.proyecto2.progra2.domain;
 
-import javax.xml.bind.annotation.XmlElement;
-import javax.xml.bind.annotation.XmlRootElement;
-
-/**
- * Clase Cliente con JAXB para persistencia en XML.
- */
-@XmlRootElement(name = "cliente")
-
 public class Cliente {
 
     private int id;
@@ -36,37 +28,30 @@ public class Cliente {
         this.email = email;
     }
 
-    @XmlElement
     public int getId() {
         return id;
     }
 
-    @XmlElement
     public String getNombre() {
         return nombre;
     }
 
-    @XmlElement
     public String getPrimerApellido() {
         return primerApellido;
     }
 
-    @XmlElement
     public String getSegundoApellido() {
         return segundoApellido;
     }
 
-    @XmlElement
     public String getTelefono() {
         return telefono;
     }
 
-    @XmlElement
     public String getDireccion() {
         return direccion;
     }
 
-    @XmlElement
     public String getEmail() {
         return email;
     }
