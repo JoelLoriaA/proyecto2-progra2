@@ -4,12 +4,14 @@ import cr.ac.ucr.servicarpro.proyecto2.progra2.data.ClienteMapper;
 import cr.ac.ucr.servicarpro.proyecto2.progra2.data.GenericXmlRepository;
 import cr.ac.ucr.servicarpro.proyecto2.progra2.data.XmlRepositoryException;
 import cr.ac.ucr.servicarpro.proyecto2.progra2.domain.Cliente;
+import java.io.IOException;
 import java.util.Comparator;
 import java.util.List;
+import org.jdom2.JDOMException;
 
 public class Utility {
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws JDOMException, IOException {
         try {
             GenericXmlRepository<Cliente, Integer> clienteRepo =
                     new GenericXmlRepository<>(

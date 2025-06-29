@@ -64,8 +64,8 @@ public class RepuestoServlet extends HttpServlet {
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         try {
-            int id = request.getParameter("id") == null || request.getParameter("id").isEmpty()
-                    ? repuestoDAO.getNextId() : Integer.parseInt(request.getParameter("id"));
+            boolean esNuevo = request.getParameter("id") == null || request.getParameter("id").isEmpty();
+            int id = esNuevo ? repuestoDAO.getNextId() : Integer.parseInt(request.getParameter("id"));
 
             String nombre = request.getParameter("nombre");
             String descripcion = request.getParameter("descripcion");
@@ -75,12 +75,30 @@ public class RepuestoServlet extends HttpServlet {
 
             Repuesto repuesto = new Repuesto(id, nombre, descripcion, precio, cantidad, pedido);
 
-            repuestoDAO.save(repuesto);
+            if (precio < 0 || cantidad < 0) {
+                request.setAttribute("repuesto", repuesto);
+                request.setAttribute("error", "El precio y la cantidad no pueden ser negativos.");
+                request.getRequestDispatcher("repuestos/formulario.jsp").forward(request, response);
+                return;
+            }
 
+            boolean duplicado = repuestoDAO.findAll().stream()
+                    .anyMatch(r -> (esNuevo || r.getId() != id) && r.getNombre().equalsIgnoreCase(nombre));
+
+            if (duplicado) {
+                request.setAttribute("repuesto", repuesto);
+                request.setAttribute("error", "Ya existe un repuesto con ese nombre.");
+                request.getRequestDispatcher("repuestos/formulario.jsp").forward(request, response);
+                return;
+            }
+
+            repuestoDAO.save(repuesto);
             response.sendRedirect("RepuestoServlet");
 
         } catch (Exception e) {
             throw new ServletException("Error al guardar el repuesto", e);
         }
     }
+
+
 }

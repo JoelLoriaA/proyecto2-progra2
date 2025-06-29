@@ -13,7 +13,7 @@ public class ServicioDAO extends GenericXmlRepository<Servicio, Integer> {
 
     public ServicioDAO() throws JDOMException, IOException {
         super(
-            "xml_data/servicios.xml",     // Ruta del archivo XML
+            System.getProperty("user.home") + "/movasystem/servicios.xml",
             "servicios",                  // Tag raíz
             "servicio",                   // Tag de cada entidad
             Servicio::getId,              // Clave primaria

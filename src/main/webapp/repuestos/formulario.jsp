@@ -3,6 +3,7 @@
 <%
     Repuesto r = (Repuesto) request.getAttribute("repuesto");
     boolean editando = (r != null);
+    String error = (String) request.getAttribute("error");
 %>
 <!DOCTYPE html>
 <html>
@@ -56,6 +57,10 @@
             color: #f1f1f1;
         }
 
+        input[type="number"] {
+            min: 0;
+        }
+
         input[type="checkbox"] {
             transform: scale(1.2);
             margin-right: 8px;
@@ -85,11 +90,26 @@
         .back-link:hover {
             text-decoration: underline;
         }
+
+        .error-message {
+            color: #ff4d4d;
+            background-color: #2a2a2a;
+            border: 1px solid #ff4d4d;
+            padding: 10px;
+            margin-bottom: 16px;
+            border-radius: 5px;
+            text-align: center;
+        }
     </style>
 </head>
 <body>
 <h2><%= editando ? "Editar Repuesto" : "Nuevo Repuesto" %></h2>
+
 <form action="RepuestoServlet" method="post">
+    <% if (error != null) { %>
+        <div class="error-message"><%= error %></div>
+    <% } %>
+
     <% if (editando) { %>
         <input type="hidden" name="id" value="<%= r.getId() %>"/>
     <% } %>
@@ -101,10 +121,10 @@
     <input type="text" name="descripcion" id="descripcion" value="<%= editando ? r.getDescripcion() : "" %>" required/>
 
     <label for="precio">Precio:</label>
-    <input type="number" step="0.01" name="precio" id="precio" value="<%= editando ? r.getPrecio() : "" %>" required/>
+    <input type="number" step="0.01" min="0" name="precio" id="precio" value="<%= editando ? r.getPrecio() : "" %>" required/>
 
     <label for="cantidadDisponible">Cantidad Disponible:</label>
-    <input type="number" name="cantidadDisponible" id="cantidadDisponible" value="<%= editando ? r.getCantidadDisponible() : "" %>" required/>
+    <input type="number" min="0" name="cantidadDisponible" id="cantidadDisponible" value="<%= editando ? r.getCantidadDisponible() : "" %>" required/>
 
     <label>
         <input type="checkbox" name="pedido" <%= (editando && r.isPedido()) ? "checked" : "" %> />

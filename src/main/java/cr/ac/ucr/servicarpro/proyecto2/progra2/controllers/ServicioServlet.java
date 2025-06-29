@@ -63,9 +63,9 @@ public class ServicioServlet extends HttpServlet {
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         try {
-            int id;
-            id = request.getParameter("id") == null || request.getParameter("id").isEmpty()
-                    ? servicioDAO.getNextId() : Integer.parseInt(request.getParameter("id"));
+            int id = request.getParameter("id") == null || request.getParameter("id").isEmpty()
+                    ? servicioDAO.getNextId()
+                    : Integer.parseInt(request.getParameter("id"));
 
             String nombre = request.getParameter("nombre");
             String descripcion = request.getParameter("descripcion");
@@ -74,12 +74,31 @@ public class ServicioServlet extends HttpServlet {
 
             Servicio servicio = new Servicio(id, nombre, descripcion, precio, costoManoObra);
 
-            servicioDAO.save(servicio);
+            if (precio < 0 || costoManoObra < 0) {
+                request.setAttribute("servicio", servicio);
+                request.setAttribute("error", "El precio y el costo de mano de obra no pueden ser negativos.");
+                request.getRequestDispatcher("servicios/formulario.jsp").forward(request, response);
+                return;
+            }
 
+            boolean esNuevo = request.getParameter("id") == null || request.getParameter("id").isEmpty();
+            boolean existeDuplicado = servicioDAO.findAll().stream()
+                    .anyMatch(s -> (esNuevo || s.getId() != id) && s.getNombre().equalsIgnoreCase(nombre));
+
+            if (existeDuplicado) {
+                request.setAttribute("servicio", servicio);
+                request.setAttribute("error", "Ya existe un servicio con ese nombre.");
+                request.getRequestDispatcher("servicios/formulario.jsp").forward(request, response);
+                return;
+            }
+
+            servicioDAO.save(servicio);
             response.sendRedirect("ServicioServlet");
 
         } catch (Exception e) {
             throw new ServletException("Error al guardar el servicio", e);
         }
     }
+
+
 }

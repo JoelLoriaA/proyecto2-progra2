@@ -19,14 +19,14 @@ public class DetalleOrdenService {
         this.detalleOrdenDAO = new DetalleOrdenDAO();
     }
 
-    public void agregarDetalle(DetalleOrden detalle) {
+    public void agregarDetalle(DetalleOrden detalle) throws IOException {
         if (detalle.getIdDetalleOrden() == 0) {
             detalle.setIdDetalleOrden(detalleOrdenDAO.getNextId());
         }
         detalleOrdenDAO.insertOrUpdate(detalle);
     }
 
-    public void modificarDetalle(DetalleOrden detalle) {
+    public void modificarDetalle(DetalleOrden detalle) throws IOException {
         detalleOrdenDAO.edit(detalle);
     }
 
@@ -36,7 +36,7 @@ public class DetalleOrdenService {
             .filter(d -> d.getIdDetalleOrden() != idDetalleOrden)
             .collect(Collectors.toList());
         // Limpiar y reinsertar todos menos el eliminado
-        detalles.forEach(detalleOrdenDAO::insertOrUpdate);
+       // detalles.forEach(detalleOrdenDAO::insertOrUpdate);
     }
 
     public List<DetalleOrden> listarDetallesPorOrden(int idOrdenTrabajo) {

@@ -63,8 +63,8 @@ public class ClienteServlet extends HttpServlet {
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         try {
-            int id = request.getParameter("id") == null || request.getParameter("id").isEmpty()
-                    ? clienteDAO.getNextId() : Integer.parseInt(request.getParameter("id"));
+            boolean esNuevo = request.getParameter("id") == null || request.getParameter("id").isEmpty();
+            int id = esNuevo ? clienteDAO.getNextId() : Integer.parseInt(request.getParameter("id"));
 
             String nombre = request.getParameter("nombre");
             String primerApellido = request.getParameter("primerApellido");
@@ -75,8 +75,18 @@ public class ClienteServlet extends HttpServlet {
 
             Cliente cliente = new Cliente(id, nombre, primerApellido, segundoApellido, telefono, direccion, email);
 
-            clienteDAO.save(cliente);
+            boolean duplicado = clienteDAO.findAll().stream()
+                    .anyMatch(c -> (esNuevo || c.getId() != id) &&
+                            (c.getEmail().equalsIgnoreCase(email) || c.getId() == id));
 
+            if (duplicado) {
+                request.setAttribute("cliente", cliente);
+                request.setAttribute("error", "Ya existe un cliente con ese correo o cédula.");
+                request.getRequestDispatcher("clientes/formulario.jsp").forward(request, response);
+                return;
+            }
+
+            clienteDAO.save(cliente);
             response.sendRedirect("ClienteServlet");
 
         } catch (Exception e) {

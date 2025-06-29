@@ -3,6 +3,7 @@
 <%
     Servicio s = (Servicio) request.getAttribute("servicio");
     boolean editando = (s != null);
+    String error = (String) request.getAttribute("error");
 %>
 <!DOCTYPE html>
 <html>
@@ -56,6 +57,10 @@
             color: #f1f1f1;
         }
 
+        input[type="number"] {
+            min: 0;
+        }
+
         input[type="submit"] {
             background-color: #ff3c00;
             color: white;
@@ -80,11 +85,26 @@
         .back-link:hover {
             text-decoration: underline;
         }
+
+        .error-message {
+            color: #ff4d4d;
+            background-color: #2a2a2a;
+            border: 1px solid #ff4d4d;
+            padding: 10px;
+            margin-bottom: 16px;
+            border-radius: 5px;
+            text-align: center;
+        }
     </style>
 </head>
 <body>
 <h2><%= editando ? "Editar Servicio" : "Nuevo Servicio" %></h2>
+
 <form action="ServicioServlet" method="post">
+    <% if (error != null) { %>
+        <div class="error-message"><%= error %></div>
+    <% } %>
+
     <% if (editando) { %>
         <input type="hidden" name="id" value="<%= s.getId() %>"/>
     <% } %>
@@ -96,10 +116,10 @@
     <input type="text" name="descripcion" id="descripcion" value="<%= editando ? s.getDescripcion() : "" %>" required/>
 
     <label for="precio">Precio:</label>
-    <input type="number" step="0.01" name="precio" id="precio" value="<%= editando ? s.getPrecio() : "" %>" required/>
+    <input type="number" step="0.01" min="0" name="precio" id="precio" value="<%= editando ? s.getPrecio() : "" %>" required/>
 
     <label for="costoManoObra">Costo de Mano de Obra:</label>
-    <input type="number" step="0.01" name="costoManoObra" id="costoManoObra" value="<%= editando ? s.getCostoManoObra() : "" %>" required/>
+    <input type="number" step="0.01" min="0" name="costoManoObra" id="costoManoObra" value="<%= editando ? s.getCostoManoObra() : "" %>" required/>
 
     <input type="submit" value="Guardar"/>
 </form>

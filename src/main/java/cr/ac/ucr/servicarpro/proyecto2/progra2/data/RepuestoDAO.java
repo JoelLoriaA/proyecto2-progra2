@@ -10,7 +10,7 @@ public class RepuestoDAO extends GenericXmlRepository<Repuesto, Integer> {
 
     public RepuestoDAO() throws JDOMException, IOException {
         super(
-            "xml_data/repuestos.xml",
+            System.getProperty("user.home") + "/movasystem/repuestos.xml",
             "repuestos",
             "repuesto",
             Repuesto::getId,

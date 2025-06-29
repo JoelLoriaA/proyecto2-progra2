@@ -157,6 +157,8 @@ public class GenericXmlRepository<T, K extends Comparable<K>> {
         }
         
         System.out.println("[XML] Guardando en: " + file.getAbsolutePath());
+        System.out.flush();
+
         try (PrintWriter writer = new PrintWriter(file)) {
             outputter.output(this.document, writer);
         }

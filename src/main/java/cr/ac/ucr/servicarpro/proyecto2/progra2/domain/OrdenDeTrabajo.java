@@ -67,11 +67,11 @@ public class OrdenDeTrabajo {
         this.fechaIngreso = fechaIngreso;
     }
 
-    public String getEstado() {
+    public Estado getEstado() {
         return estado;
     }
 
-    public void setEstado(String estado) {
+    public void setEstado(Estado estado) {
         this.estado = estado;
     }
 

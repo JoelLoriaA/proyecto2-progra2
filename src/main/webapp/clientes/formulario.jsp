@@ -3,6 +3,7 @@
 <%
     Cliente c = (Cliente) request.getAttribute("cliente");
     boolean editando = (c != null);
+    String error = (String) request.getAttribute("error");
 %>
 <!DOCTYPE html>
 <html>
@@ -78,12 +79,30 @@
         .back-link:hover {
             text-decoration: underline;
         }
+
+        .error-message {
+            color: #ff4d4d;
+            background-color: #2a2a2a;
+            border: 1px solid #ff4d4d;
+            padding: 10px;
+            margin-bottom: 16px;
+            border-radius: 5px;
+            text-align: center;
+        }
     </style>
 </head>
 <body>
 <h2><%= editando ? "Editar Cliente" : "Nuevo Cliente" %></h2>
+
 <form action="ClienteServlet" method="post">
-    <% if (editando) { %>
+    <% if (error != null) { %>
+        <div class="error-message"><%= error %></div>
+    <% } %>
+
+    <% if (!editando) { %>
+        <label for="id">Cédula:</label>
+        <input type="text" name="id" id="id" value="" required/>
+    <% } else { %>
         <input type="hidden" name="id" value="<%= c.getId() %>"/>
     <% } %>
 

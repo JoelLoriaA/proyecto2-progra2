@@ -13,12 +13,13 @@ public class ClienteDAO extends GenericXmlRepository<Cliente, Integer> {
 
     public ClienteDAO() throws JDOMException, IOException {
         super(
-            "xml_data/clientes.xml",            // Archivo XML
-            "clientes",                         // Tag raíz
-            "cliente",                          // Tag de entidad
-            Cliente::getId,                     // Clave primaria
-            Comparator.comparing(Cliente::getPrimerApellido).thenComparing(Cliente::getNombre), // Orden por apellido y nombre
-            new ClienteMapper()                 // Mapper JDOM
+            System.getProperty("user.home") + "/movasystem/clientes.xml",
+            "clientes",
+            "cliente",
+            Cliente::getId,
+            Comparator.comparing(Cliente::getPrimerApellido).thenComparing(Cliente::getNombre),
+            new ClienteMapper()
         );
+
     }
 }
