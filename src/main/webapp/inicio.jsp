@@ -1,4 +1,5 @@
 <%@ page contentType="text/html;charset=UTF-8" %>
+<!DOCTYPE html>
 <html>
 <head>
     <title>Inicio - MovaSystem</title>
@@ -131,8 +132,15 @@
         <div class="card">
             <i class="fas fa-tools"></i>
             <h3>Servicios</h3>
-            <p>Agregar repuestos y trabajos a la orden.</p>
-            <a href="ServiciosServlet">Gestionar Servicios</a>
+            <p>Agregar servicios y mano de obra a la orden.</p>
+            <a href="ServicioServlet">Gestionar Servicios</a>
+        </div>
+
+        <div class="card">
+            <i class="fas fa-cogs"></i>
+            <h3>Repuestos</h3>
+            <p>Gestionar stock y pedidos de repuestos.</p>
+            <a href="RepuestoServlet">Ver Repuestos</a>
         </div>
 
         <div class="card">

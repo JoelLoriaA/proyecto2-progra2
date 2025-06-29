@@ -1,17 +1,9 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
 package cr.ac.ucr.servicarpro.proyecto2.progra2.domain;
 
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 
-/**
- * Clase Cliente con JAXB para persistencia en XML.
- */
 @XmlRootElement(name = "cliente")
-
 public class Cliente {
 
     private int id;
@@ -26,7 +18,8 @@ public class Cliente {
     public Cliente() {
     }
 
-    public Cliente(int id, String nombre, String primerApellido, String segundoApellido, String telefono, String direccion, String email) {
+    public Cliente(int id, String nombre, String primerApellido, String segundoApellido,
+                   String telefono, String direccion, String email) {
         this.id = id;
         this.nombre = nombre;
         this.primerApellido = primerApellido;
@@ -97,12 +90,5 @@ public class Cliente {
 
     public void setEmail(String email) {
         this.email = email;
-    }
-
-    @Override
-    public String toString() {
-        return "Cliente [id=" + id + ", nombre=" + nombre + ", primerApellido=" + primerApellido +
-               ", segundoApellido=" + segundoApellido + ", telefono=" + telefono +
-               ", direccion=" + direccion + ", email=" + email + "]";
     }
 }

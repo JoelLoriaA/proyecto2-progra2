@@ -1,20 +1,19 @@
 <%@ page contentType="text/html;charset=UTF-8" %>
-<%@ page import="java.util.List, cr.ac.ucr.servicarpro.proyecto2.progra2.domain.Cliente" %>
+<%@ page import="java.util.List, cr.ac.ucr.servicarpro.proyecto2.progra2.domain.Repuesto" %>
 <%
-    List<Cliente> clientes = (List<Cliente>) request.getAttribute("clientes");
+    List<Repuesto> repuestos = (List<Repuesto>) request.getAttribute("repuestos");
 %>
 <!DOCTYPE html>
 <html>
 <head>
     <meta charset="UTF-8">
-    <title>Clientes Registrados</title>
+    <title>Inventario de Repuestos</title>
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
     <style>
         body {
             font-family: 'Roboto', sans-serif;
             background-color: #121212;
-            margin: 0;
             padding: 40px;
             color: #f1f1f1;
         }
@@ -68,16 +67,22 @@
             background-color: #2d2d2d;
         }
 
-        .danger {
+        .stock-low {
             color: #ff4c4c;
             font-weight: bold;
         }
 
-        .icon {
-            margin-right: 6px;
+        .pedido {
+            color: #27ae60;
+            font-weight: bold;
         }
 
-        .action-btn {
+        .precio {
+            font-weight: bold;
+            color: #ffd166;
+        }
+
+        .acciones a {
             display: inline-block;
             text-decoration: none;
             padding: 6px 10px;
@@ -104,67 +109,62 @@
             background-color: #c0392b;
         }
 
-        .email-link {
-            background-color: #27ae60;
-        }
-
-        .email-link:hover {
-            background-color: #1e8449;
-        }
-
         .no-data {
             text-align: center;
             padding: 20px;
             color: #bbb;
         }
+
+        .icon {
+            margin-right: 6px;
+        }
     </style>
 </head>
 <body>
 
-<h2>Clientes Registrados</h2>
-<a class="top-link" href="ClienteServlet?action=new">➕ Nuevo Cliente</a>
+<h2>Inventario de Repuestos</h2>
+<a class="top-link" href="RepuestoServlet?action=new">➕ Agregar Repuesto</a>
 
 <table>
     <tr>
         <th>#</th>
-        <th>Nombre Completo</th>
-        <th>Teléfono</th>
-        <th>Dirección</th>
-        <th>Email</th>
+        <th>Nombre</th>
+        <th>Descripción</th>
+        <th>Precio</th>
+        <th>Cantidad</th>
+        <th>Estado</th>
         <th>Acciones</th>
     </tr>
 <%
-    if (clientes != null && !clientes.isEmpty()) {
-        for (Cliente c : clientes) {
-            boolean tieneEmail = c.getEmail() != null && !c.getEmail().isBlank();
-            boolean sinTelefono = c.getTelefono() == null || c.getTelefono().isBlank();
+    if (repuestos != null && !repuestos.isEmpty()) {
+        for (Repuesto r : repuestos) {
+            boolean bajoStock = r.getCantidadDisponible() < 5;
+            boolean fuePedido = r.isPedido();
 %>
     <tr>
-        <td><%= c.getId() %></td>
-        <td><i class="fas fa-user icon"></i><%= c.getNombre() %> <%= c.getPrimerApellido() %> <%= c.getSegundoApellido() %></td>
-        <td class="<%= sinTelefono ? "danger" : "" %>">
-            <i class="fas fa-phone icon"></i>
-            <%= sinTelefono ? "No registrado" : c.getTelefono() %>
-        </td>
-        <td><i class="fas fa-map-marker-alt icon"></i><%= c.getDireccion() %></td>
+        <td><%= r.getId() %></td>
+        <td><i class="fas fa-cog icon"></i><%= r.getNombre() %></td>
+        <td><%= r.getDescripcion() %></td>
+        <td class="precio">₡<%= String.format("%,.2f", r.getPrecio()) %></td>
+        <td class="<%= bajoStock ? "stock-low" : "" %>"><%= r.getCantidadDisponible() %></td>
         <td>
-            <i class="fas fa-envelope icon"></i>
-            <%= tieneEmail ? c.getEmail() : "—" %>
-        </td>
-        <td>
-            <a class="action-btn edit-link" href="ClienteServlet?action=edit&id=<%= c.getId() %>">Editar</a>
-            <a class="action-btn delete-link" href="ClienteServlet?action=delete&id=<%= c.getId() %>"
-               onclick="return confirm('¿Eliminar este cliente?')">Borrar</a>
-            <% if (tieneEmail) { %>
-                <a class="action-btn email-link" href="mailto:<%= c.getEmail() %>">Contactar</a>
+            <% if (fuePedido) { %>
+                <span class="pedido"><i class="fas fa-check-circle icon"></i>Pedido</span>
+            <% } else { %>
+                <span style="color:#999;"><i class="fas fa-clock icon"></i>No pedido</span>
             <% } %>
+        </td>
+        <td class="acciones">
+            <a class="edit-link" href="RepuestoServlet?action=edit&id=<%= r.getId() %>">Editar</a>
+            <a class="delete-link" href="RepuestoServlet?action=delete&id=<%= r.getId() %>"
+               onclick="return confirm('¿Eliminar este repuesto?')">Borrar</a>
         </td>
     </tr>
 <%
         }
     } else {
 %>
-    <tr><td colspan="6" class="no-data">No hay clientes registrados.</td></tr>
+    <tr><td colspan="7" class="no-data">No hay repuestos registrados.</td></tr>
 <%
     }
 %>

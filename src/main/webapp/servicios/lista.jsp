@@ -1,20 +1,19 @@
 <%@ page contentType="text/html;charset=UTF-8" %>
-<%@ page import="java.util.List, cr.ac.ucr.servicarpro.proyecto2.progra2.domain.Cliente" %>
+<%@ page import="java.util.List, cr.ac.ucr.servicarpro.proyecto2.progra2.domain.Servicio" %>
 <%
-    List<Cliente> clientes = (List<Cliente>) request.getAttribute("clientes");
+    List<Servicio> servicios = (List<Servicio>) request.getAttribute("servicios");
 %>
 <!DOCTYPE html>
 <html>
 <head>
     <meta charset="UTF-8">
-    <title>Clientes Registrados</title>
+    <title>Servicios del Taller</title>
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
     <style>
         body {
             font-family: 'Roboto', sans-serif;
             background-color: #121212;
-            margin: 0;
             padding: 40px;
             color: #f1f1f1;
         }
@@ -68,16 +67,22 @@
             background-color: #2d2d2d;
         }
 
-        .danger {
-            color: #ff4c4c;
+        .precio {
+            color: #ffd166;
             font-weight: bold;
         }
 
-        .icon {
-            margin-right: 6px;
+        .manoObra {
+            color: #9be2e2;
+            font-weight: bold;
         }
 
-        .action-btn {
+        .total {
+            color: #aaffaa;
+            font-weight: bold;
+        }
+
+        .acciones a {
             display: inline-block;
             text-decoration: none;
             padding: 6px 10px;
@@ -104,67 +109,55 @@
             background-color: #c0392b;
         }
 
-        .email-link {
-            background-color: #27ae60;
-        }
-
-        .email-link:hover {
-            background-color: #1e8449;
-        }
-
         .no-data {
             text-align: center;
             padding: 20px;
             color: #bbb;
         }
+
+        .icon {
+            margin-right: 6px;
+        }
     </style>
 </head>
 <body>
 
-<h2>Clientes Registrados</h2>
-<a class="top-link" href="ClienteServlet?action=new">➕ Nuevo Cliente</a>
+<h2>Servicios del Taller</h2>
+<a class="top-link" href="ServicioServlet?action=new">➕ Agregar Servicio</a>
 
 <table>
     <tr>
         <th>#</th>
-        <th>Nombre Completo</th>
-        <th>Teléfono</th>
-        <th>Dirección</th>
-        <th>Email</th>
+        <th>Servicio</th>
+        <th>Descripción</th>
+        <th>Precio</th>
+        <th>Mano de Obra</th>
+        <th>Total</th>
         <th>Acciones</th>
     </tr>
 <%
-    if (clientes != null && !clientes.isEmpty()) {
-        for (Cliente c : clientes) {
-            boolean tieneEmail = c.getEmail() != null && !c.getEmail().isBlank();
-            boolean sinTelefono = c.getTelefono() == null || c.getTelefono().isBlank();
+    if (servicios != null && !servicios.isEmpty()) {
+        for (Servicio s : servicios) {
+            double total = s.getPrecio() + s.getCostoManoObra();
 %>
     <tr>
-        <td><%= c.getId() %></td>
-        <td><i class="fas fa-user icon"></i><%= c.getNombre() %> <%= c.getPrimerApellido() %> <%= c.getSegundoApellido() %></td>
-        <td class="<%= sinTelefono ? "danger" : "" %>">
-            <i class="fas fa-phone icon"></i>
-            <%= sinTelefono ? "No registrado" : c.getTelefono() %>
-        </td>
-        <td><i class="fas fa-map-marker-alt icon"></i><%= c.getDireccion() %></td>
-        <td>
-            <i class="fas fa-envelope icon"></i>
-            <%= tieneEmail ? c.getEmail() : "—" %>
-        </td>
-        <td>
-            <a class="action-btn edit-link" href="ClienteServlet?action=edit&id=<%= c.getId() %>">Editar</a>
-            <a class="action-btn delete-link" href="ClienteServlet?action=delete&id=<%= c.getId() %>"
-               onclick="return confirm('¿Eliminar este cliente?')">Borrar</a>
-            <% if (tieneEmail) { %>
-                <a class="action-btn email-link" href="mailto:<%= c.getEmail() %>">Contactar</a>
-            <% } %>
+        <td><%= s.getId() %></td>
+        <td><i class="fas fa-tools icon"></i><%= s.getNombre() %></td>
+        <td><%= s.getDescripcion() %></td>
+        <td class="precio">₡<%= String.format("%,.2f", s.getPrecio()) %></td>
+        <td class="manoObra">₡<%= String.format("%,.2f", s.getCostoManoObra()) %></td>
+        <td class="total">₡<%= String.format("%,.2f", total) %></td>
+        <td class="acciones">
+            <a class="edit-link" href="ServicioServlet?action=edit&id=<%= s.getId() %>">Editar</a>
+            <a class="delete-link" href="ServicioServlet?action=delete&id=<%= s.getId() %>"
+               onclick="return confirm('¿Eliminar este servicio?')">Borrar</a>
         </td>
     </tr>
 <%
         }
     } else {
 %>
-    <tr><td colspan="6" class="no-data">No hay clientes registrados.</td></tr>
+    <tr><td colspan="7" class="no-data">No hay servicios registrados.</td></tr>
 <%
     }
 %>

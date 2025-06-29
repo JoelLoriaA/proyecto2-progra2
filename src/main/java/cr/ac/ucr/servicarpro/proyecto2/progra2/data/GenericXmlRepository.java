@@ -20,7 +20,7 @@ public class GenericXmlRepository<T, K extends Comparable<K>> {
 
     private final Document document;
     private final Element root;
-    private final String filePath;
+    public String filePath;
     private final Function<T, K> keyExtractor;
     private final Comparator<T> comparator;
     private final EntityMapper<T, K> mapper;
@@ -139,4 +139,31 @@ public class GenericXmlRepository<T, K extends Comparable<K>> {
             outputter.output(this.document, writer);
         }
     }
+    
+        public void save(T entity) throws IOException {
+        insertOrUpdate(entity);
+    }
+
+    public void delete(K key) throws IOException {
+        List<Element> elements = root.getChildren(entityTag);
+        Element toRemove = null;
+
+        for (Element e : elements) {
+            K existingKey = mapper.getKeyFromElement(e);
+            if (key.compareTo(existingKey) == 0) {
+                toRemove = e;
+                break;
+            }
+        }
+
+        if (toRemove != null) {
+            root.removeContent(toRemove);
+            save();
+        }
+    }
+
+    public T findById(K key) {
+        return findByKey(key).orElse(null);
+    }
+
 }

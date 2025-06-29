@@ -1,14 +1,14 @@
 <%@ page contentType="text/html;charset=UTF-8" %>
-<%@ page import="cr.ac.ucr.servicarpro.proyecto2.progra2.domain.Cliente" %>
+<%@ page import="cr.ac.ucr.servicarpro.proyecto2.progra2.domain.Servicio" %>
 <%
-    Cliente c = (Cliente) request.getAttribute("cliente");
-    boolean editando = (c != null);
+    Servicio s = (Servicio) request.getAttribute("servicio");
+    boolean editando = (s != null);
 %>
 <!DOCTYPE html>
 <html>
 <head>
     <meta charset="UTF-8">
-    <title><%= editando ? "Editar Cliente" : "Nuevo Cliente" %></title>
+    <title><%= editando ? "Editar Servicio" : "Nuevo Servicio" %></title>
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
     <style>
         body {
@@ -40,6 +40,7 @@
         }
 
         input[type="text"],
+        input[type="number"],
         input[type="submit"] {
             width: 100%;
             padding: 10px;
@@ -49,7 +50,8 @@
             font-size: 16px;
         }
 
-        input[type="text"] {
+        input[type="text"],
+        input[type="number"] {
             background-color: #2a2a2a;
             color: #f1f1f1;
         }
@@ -81,33 +83,27 @@
     </style>
 </head>
 <body>
-<h2><%= editando ? "Editar Cliente" : "Nuevo Cliente" %></h2>
-<form action="ClienteServlet" method="post">
+<h2><%= editando ? "Editar Servicio" : "Nuevo Servicio" %></h2>
+<form action="ServicioServlet" method="post">
     <% if (editando) { %>
-        <input type="hidden" name="id" value="<%= c.getId() %>"/>
+        <input type="hidden" name="id" value="<%= s.getId() %>"/>
     <% } %>
 
     <label for="nombre">Nombre:</label>
-    <input type="text" name="nombre" id="nombre" value="<%= editando ? c.getNombre() : "" %>" required/>
+    <input type="text" name="nombre" id="nombre" value="<%= editando ? s.getNombre() : "" %>" required/>
 
-    <label for="primerApellido">Primer Apellido:</label>
-    <input type="text" name="primerApellido" id="primerApellido" value="<%= editando ? c.getPrimerApellido() : "" %>" required/>
+    <label for="descripcion">Descripción:</label>
+    <input type="text" name="descripcion" id="descripcion" value="<%= editando ? s.getDescripcion() : "" %>" required/>
 
-    <label for="segundoApellido">Segundo Apellido:</label>
-    <input type="text" name="segundoApellido" id="segundoApellido" value="<%= editando ? c.getSegundoApellido() : "" %>" required/>
+    <label for="precio">Precio:</label>
+    <input type="number" step="0.01" name="precio" id="precio" value="<%= editando ? s.getPrecio() : "" %>" required/>
 
-    <label for="telefono">Teléfono:</label>
-    <input type="text" name="telefono" id="telefono" value="<%= editando ? c.getTelefono() : "" %>" required/>
-
-    <label for="direccion">Dirección:</label>
-    <input type="text" name="direccion" id="direccion" value="<%= editando ? c.getDireccion() : "" %>" required/>
-
-    <label for="email">Correo Electrónico:</label>
-    <input type="text" name="email" id="email" value="<%= editando ? c.getEmail() : "" %>" required/>
+    <label for="costoManoObra">Costo de Mano de Obra:</label>
+    <input type="number" step="0.01" name="costoManoObra" id="costoManoObra" value="<%= editando ? s.getCostoManoObra() : "" %>" required/>
 
     <input type="submit" value="Guardar"/>
 </form>
 
-<a class="back-link" href="ClienteServlet">← Volver a la lista</a>
+<a class="back-link" href="ServicioServlet">← Volver a la lista</a>
 </body>
 </html>
