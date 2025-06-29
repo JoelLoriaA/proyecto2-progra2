@@ -133,7 +133,8 @@ public class GenericXmlRepository<T, K extends Comparable<K>> {
                 System.err.println(" No se pudo crear la carpeta: " + parentDir.getPath());
             }
         }
-
+        
+        System.out.println("[XML] Guardando en: " + file.getAbsolutePath());
         try (PrintWriter writer = new PrintWriter(file)) {
             outputter.output(this.document, writer);
         }

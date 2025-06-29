@@ -18,7 +18,7 @@ public class ClienteMapper implements EntityMapper<Cliente, Integer> {
     public Cliente elementToEntity(Element e) {
         int id = Integer.parseInt(e.getAttributeValue("id"));
         String nombre = e.getChildText("nombre");
-        String apellido = e.getChildText("apellido");
+        String apellido = e.getChildText("primerApellido");
         String segundoApellido = e.getChildText("segundoApellido");
         String telefono = e.getChildText("telefono");
         String direccion = e.getChildText("direccion");
@@ -33,7 +33,7 @@ public class ClienteMapper implements EntityMapper<Cliente, Integer> {
         e.setAttribute("id", String.valueOf(cliente.getId()));
 
         Element eNombre = new Element("nombre").setText(cliente.getNombre());
-        Element eApellido = new Element("apellido").setText(cliente.getPrimerApellido());
+        Element eApellido = new Element("primerApellido").setText(cliente.getPrimerApellido());
         Element eSegundoApellido = new Element("segundoApellido").setText(cliente.getSegundoApellido());
         Element eTelefono = new Element("telefono").setText(cliente.getTelefono());
         Element eDireccion = new Element("direccion").setText(cliente.getDireccion());

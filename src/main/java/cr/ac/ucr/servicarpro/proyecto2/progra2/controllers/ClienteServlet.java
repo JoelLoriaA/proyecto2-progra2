@@ -5,7 +5,9 @@
 package cr.ac.ucr.servicarpro.proyecto2.progra2.controllers;
 
 import java.io.IOException;
-import java.io.PrintWriter;
+import java.util.List;
+import cr.ac.ucr.servicarpro.proyecto2.progra2.domain.Cliente;
+import cr.ac.ucr.servicarpro.proyecto2.progra2.servicies.ClienteService;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
@@ -18,6 +20,7 @@ import jakarta.servlet.http.HttpServletResponse;
  */
 @WebServlet(name = "ClienteServlet", urlPatterns = {"/ClienteServlet"})
 public class ClienteServlet extends HttpServlet {
+    private ClienteService clienteService = new ClienteService();
 
     /**
      * Processes requests for both HTTP <code>GET</code> and <code>POST</code>
@@ -30,18 +33,27 @@ public class ClienteServlet extends HttpServlet {
      */
     protected void processRequest(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        response.setContentType("text/html;charset=UTF-8");
-        try (PrintWriter out = response.getWriter()) {
-            /* TODO output your page here. You may use following sample code. */
-            out.println("<!DOCTYPE html>");
-            out.println("<html>");
-            out.println("<head>");
-            out.println("<title>Servlet ClienteServlet</title>");
-            out.println("</head>");
-            out.println("<body>");
-            out.println("<h1>Servlet ClienteServlet at " + request.getContextPath() + "</h1>");
-            out.println("</body>");
-            out.println("</html>");
+        String action = request.getParameter("action");
+        if (action == null) action = "list";
+        switch (action) {
+            case "showForm":
+                request.getRequestDispatcher("/clientes/formulario.jsp").forward(request, response);
+                break;
+            case "edit":
+                int idEdit = Integer.parseInt(request.getParameter("id"));
+                Cliente clienteEdit = clienteService.buscarPorId(idEdit);
+                request.setAttribute("cliente", clienteEdit);
+                request.getRequestDispatcher("/clientes/formulario.jsp").forward(request, response);
+                break;
+            case "delete":
+                int idDelete = Integer.parseInt(request.getParameter("id"));
+                clienteService.borrarCliente(idDelete);
+                response.sendRedirect("ClienteServlet");
+                break;
+            default: // list
+                List<Cliente> clientes = clienteService.listarClientes();
+                request.setAttribute("clientes", clientes);
+                request.getRequestDispatcher("/clientes/lista.jsp").forward(request, response);
         }
     }
 
@@ -71,7 +83,25 @@ public class ClienteServlet extends HttpServlet {
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        processRequest(request, response);
+        String action = request.getParameter("action");
+        if ("add".equals(action)) {
+            String nombre = request.getParameter("nombre");
+            // ...otros campos...
+            Cliente nuevo = new Cliente();
+            nuevo.setNombre(nombre);
+            // ...set otros campos...
+            clienteService.agregarCliente(nuevo);
+            response.sendRedirect("ClienteServlet");
+        } else if ("update".equals(action)) {
+            int id = Integer.parseInt(request.getParameter("id"));
+            String nombre = request.getParameter("nombre");
+            // ...otros campos...
+            Cliente cliente = clienteService.buscarPorId(id);
+            cliente.setNombre(nombre);
+            // ...set otros campos...
+            clienteService.actualizarCliente(cliente);
+            response.sendRedirect("ClienteServlet");
+        }
     }
 
     /**
