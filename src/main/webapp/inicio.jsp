@@ -42,39 +42,6 @@
             margin-bottom: 10px;
         }
 
-        .kpi-panel {
-            display: flex;
-            justify-content: center;
-            gap: 20px;
-            flex-wrap: wrap;
-            padding: 10px 0 30px;
-        }
-
-        .kpi {
-            background: linear-gradient(135deg, #1f1f1f, #2a2a2a);
-            border-radius: 12px;
-            padding: 20px;
-            width: 160px;
-            text-align: center;
-            box-shadow: 0 0 15px rgba(255, 60, 0, 0.2);
-            transition: transform 0.3s;
-        }
-
-        .kpi:hover {
-            transform: scale(1.05);
-        }
-
-        .kpi h4 {
-            margin: 0;
-            font-size: 16px;
-            color: #ff3c00;
-        }
-
-        .kpi p {
-            font-size: 24px;
-            font-weight: bold;
-        }
-
         .dashboard {
             display: flex;
             flex-wrap: wrap;
@@ -163,21 +130,6 @@
 <div class="welcome">
     <h2>Bienvenido a tu panel de gestión</h2>
     <p>Administra clientes, vehículos, órdenes y más.</p>
-</div>
-
-<div class="kpi-panel">
-    <div class="kpi">
-        <h4>Clientes</h4>
-        <p>125</p>
-    </div>
-    <div class="kpi">
-        <h4>Repuestos</h4>
-        <p>320</p>
-    </div>
-    <div class="kpi">
-        <h4>Órdenes</h4>
-        <p>18</p>
-    </div>
 </div>
 
 <div class="dashboard">

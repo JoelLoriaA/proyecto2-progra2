@@ -18,6 +18,22 @@
             color: #f1f1f1;
         }
 
+        .home-button {
+            display: inline-block;
+            background-color: #ff3c00;
+            color: white;
+            text-decoration: none;
+            padding: 10px 16px;
+            border-radius: 5px;
+            font-weight: bold;
+            transition: background-color 0.3s;
+            margin-bottom: 25px;
+        }
+
+        .home-button:hover {
+            background-color: #e03a00;
+        }
+
         h2 {
             text-align: center;
             color: #ff3c00;
@@ -121,6 +137,8 @@
     </style>
 </head>
 <body>
+
+<a href="DashboardServlet" class="home-button"><i class="fas fa-home"></i> Inicio</a>
 
 <h2>Servicios del Taller</h2>
 <a class="top-link" href="ServicioServlet?action=new">➕ Agregar Servicio</a>
