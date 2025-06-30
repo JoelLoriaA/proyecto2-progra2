@@ -155,13 +155,6 @@
     </div>
 
     <div class="card">
-        <i class="fas fa-clipboard-check"></i>
-        <h3>Recepción</h3>
-        <p>Registrar detalles al recibir un vehículo.</p>
-        <a href="RecepcionServlet">Recepcionar</a>
-    </div>
-
-    <div class="card">
         <i class="fas fa-tools"></i>
         <h3>Servicios</h3>
         <p>Agregar servicios y mano de obra a la orden.</p>
