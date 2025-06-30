@@ -72,13 +72,24 @@ public class GenericXmlRepository<T, K extends Comparable<K>> {
     }
 
     public List<T> findAll() {
-        List<Element> elements = root.getChildren(entityTag);
-        List<T> entities = new ArrayList<>();
-        for (Element e : elements) {
-            entities.add(mapper.elementToEntity(e));
+        try {
+            SAXBuilder saxBuilder = new SAXBuilder();
+            Document freshDoc = saxBuilder.build(new File(filePath));
+            Element freshRoot = freshDoc.getRootElement();
+            List<Element> elements = freshRoot.getChildren(entityTag);
+
+            List<T> entities = new ArrayList<>();
+            for (Element e : elements) {
+                entities.add(mapper.elementToEntity(e));
+            }
+
+            entities.sort(comparator);
+            return entities;
+
+        } catch (JDOMException | IOException e) {
+            e.printStackTrace();
+            return new ArrayList<>();
         }
-        entities.sort(comparator);
-        return entities;
     }
 
     public Optional<T> findByKey(K key) {

@@ -26,50 +26,58 @@
         }
 
         form {
+            width: 100%;
             max-width: 500px;
             margin: 0 auto;
             background-color: #1e1e1e;
-            padding: 20px;
-            border-radius: 10px;
-            box-shadow: 0 0 12px rgba(255, 60, 0, 0.3);
+            padding: 30px 20px;
+            border-radius: 12px;
+            box-shadow: 0 0 14px rgba(255, 60, 0, 0.35);
+            display: flex;
+            flex-direction: column;
         }
 
         label {
-            display: block;
-            margin-bottom: 8px;
+            margin-bottom: 6px;
             font-weight: 500;
         }
 
         input[type="text"],
-        input[type="number"],
-        input[type="submit"] {
+        input[type="number"] {
             width: 100%;
             padding: 10px;
-            margin-bottom: 16px;
+            margin-bottom: 18px;
             border: none;
-            border-radius: 5px;
-            font-size: 16px;
-        }
-
-        input[type="text"],
-        input[type="number"] {
+            border-radius: 6px;
             background-color: #2a2a2a;
             color: #f1f1f1;
+            font-size: 15px;
         }
 
         input[type="number"] {
             min: 0;
         }
 
-        input[type="checkbox"] {
-            transform: scale(1.2);
-            margin-right: 8px;
+        .checkbox-group {
+            display: flex;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .checkbox-group input[type="checkbox"] {
+            transform: scale(1.3);
+            margin-right: 10px;
+            accent-color: #ff3c00;
         }
 
         input[type="submit"] {
             background-color: #ff3c00;
             color: white;
+            padding: 12px;
             font-weight: bold;
+            border: none;
+            border-radius: 6px;
+            font-size: 16px;
             cursor: pointer;
             transition: background-color 0.3s ease;
         }
@@ -79,12 +87,12 @@
         }
 
         .back-link {
-            display: block;
             text-align: center;
-            margin-top: 20px;
+            margin-top: 22px;
             text-decoration: none;
             color: #ff3c00;
             font-weight: bold;
+            display: block;
         }
 
         .back-link:hover {
@@ -96,8 +104,8 @@
             background-color: #2a2a2a;
             border: 1px solid #ff4d4d;
             padding: 10px;
-            margin-bottom: 16px;
-            border-radius: 5px;
+            margin-bottom: 20px;
+            border-radius: 6px;
             text-align: center;
         }
     </style>
@@ -126,10 +134,10 @@
     <label for="cantidadDisponible">Cantidad Disponible:</label>
     <input type="number" min="0" name="cantidadDisponible" id="cantidadDisponible" value="<%= editando ? r.getCantidadDisponible() : "" %>" required/>
 
-    <label>
-        <input type="checkbox" name="pedido" <%= (editando && r.isPedido()) ? "checked" : "" %> />
-        ¿Fue pedido?
-    </label>
+    <div class="checkbox-group">
+        <input type="checkbox" name="pedido" id="pedido" <%= (editando && r.isPedido()) ? "checked" : "" %> />
+        <label for="pedido">¿Fue pedido?</label>
+    </div>
 
     <input type="submit" value="Guardar"/>
 </form>

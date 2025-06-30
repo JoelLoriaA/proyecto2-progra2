@@ -172,7 +172,7 @@
         <i class="fas fa-chart-bar"></i>
         <h3>Reportes</h3>
         <p>Estadísticas e informes generales.</p>
-        <a href="ReportesServlet">Ver Reportes</a>
+        <a href="#" onclick="window.location.href='ReporteServlet'; return false;">Ver Reportes</a>
     </div>
 </div>
 
