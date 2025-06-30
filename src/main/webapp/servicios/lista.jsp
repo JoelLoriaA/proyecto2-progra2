@@ -2,6 +2,7 @@
 <%@ page import="java.util.List, cr.ac.ucr.servicarpro.proyecto2.progra2.domain.Servicio" %>
 <%
     List<Servicio> servicios = (List<Servicio>) request.getAttribute("servicios");
+    String filtroActual = request.getParameter("filtro") != null ? request.getParameter("filtro") : "";
 %>
 <!DOCTYPE html>
 <html>
@@ -37,7 +38,7 @@
         h2 {
             text-align: center;
             color: #ff3c00;
-            margin-bottom: 25px;
+            margin-bottom: 10px;
         }
 
         .top-link {
@@ -54,6 +55,42 @@
         }
 
         .top-link:hover {
+            background-color: #e03a00;
+        }
+
+        .search-form-container {
+            display: flex;
+            justify-content: flex-start;
+            margin-bottom: 20px;
+        }
+
+        form.search-form {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+
+        .search-input {
+            padding: 8px 12px;
+            border-radius: 4px;
+            border: none;
+            width: 280px;
+            font-size: 14px;
+            background-color: #1e1e1e;
+            color: #f1f1f1;
+        }
+
+        .search-button {
+            padding: 8px 14px;
+            background-color: #ff3c00;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .search-button:hover {
             background-color: #e03a00;
         }
 
@@ -141,7 +178,16 @@
 <a href="DashboardServlet" class="home-button"><i class="fas fa-home"></i> Inicio</a>
 
 <h2>Servicios del Taller</h2>
+
 <a class="top-link" href="ServicioServlet?action=new">➕ Agregar Servicio</a>
+
+<div class="search-form-container">
+    <form class="search-form" method="get" action="ServicioServlet">
+        <input type="hidden" name="action" value="list">
+        <input type="text" name="filtro" class="search-input" placeholder="Buscar por nombre, descripción o ID" value="<%= filtroActual %>">
+        <input type="submit" class="search-button" value="Buscar">
+    </form>
+</div>
 
 <table>
     <tr>

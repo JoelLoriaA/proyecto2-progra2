@@ -37,19 +37,35 @@ public class ServicioServlet extends HttpServlet {
                 case "new":
                     request.getRequestDispatcher("servicios/formulario.jsp").forward(request, response);
                     break;
+
                 case "edit":
                     int idEdit = Integer.parseInt(request.getParameter("id"));
                     Servicio servicioEdit = servicioDAO.findById(idEdit);
                     request.setAttribute("servicio", servicioEdit);
                     request.getRequestDispatcher("servicios/formulario.jsp").forward(request, response);
                     break;
+
                 case "delete":
                     int idDelete = Integer.parseInt(request.getParameter("id"));
                     servicioDAO.delete(idDelete);
                     response.sendRedirect("ServicioServlet");
                     break;
+
+                case "list":
                 default:
+                    String filtro = request.getParameter("filtro");
                     List<Servicio> servicios = servicioDAO.findAll();
+
+                    if (filtro != null && !filtro.trim().isEmpty()) {
+                        String filtroLower = filtro.toLowerCase();
+                        servicios = servicios.stream()
+                                .filter(s ->
+                                        String.valueOf(s.getId()).equals(filtro) ||
+                                        s.getNombre().toLowerCase().contains(filtroLower) ||
+                                        s.getDescripcion().toLowerCase().contains(filtroLower))
+                                .toList();
+                    }
+
                     request.setAttribute("servicios", servicios);
                     request.getRequestDispatcher("servicios/lista.jsp").forward(request, response);
                     break;
@@ -58,6 +74,7 @@ public class ServicioServlet extends HttpServlet {
             throw new ServletException("Error procesando acción: " + action, e);
         }
     }
+
 
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)

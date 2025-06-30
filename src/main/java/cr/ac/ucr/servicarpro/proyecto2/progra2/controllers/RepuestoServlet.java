@@ -38,19 +38,35 @@ public class RepuestoServlet extends HttpServlet {
                 case "new":
                     request.getRequestDispatcher("repuestos/formulario.jsp").forward(request, response);
                     break;
+
                 case "edit":
                     int idEdit = Integer.parseInt(request.getParameter("id"));
                     Repuesto repuestoEdit = repuestoDAO.findById(idEdit);
                     request.setAttribute("repuesto", repuestoEdit);
                     request.getRequestDispatcher("repuestos/formulario.jsp").forward(request, response);
                     break;
+
                 case "delete":
                     int idDelete = Integer.parseInt(request.getParameter("id"));
                     repuestoDAO.delete(idDelete);
                     response.sendRedirect("RepuestoServlet");
                     break;
+
                 default:
+                    String filtro = request.getParameter("filtro");
                     List<Repuesto> repuestos = repuestoDAO.findAll();
+
+                    if (filtro != null && !filtro.trim().isEmpty()) {
+                        String filtroLower = filtro.trim().toLowerCase();
+                        repuestos = repuestos.stream()
+                                .filter(r ->
+                                        String.valueOf(r.getId()).contains(filtroLower) ||
+                                        r.getNombre().toLowerCase().contains(filtroLower) ||
+                                        r.getDescripcion().toLowerCase().contains(filtroLower)
+                                )
+                                .toList();
+                    }
+
                     request.setAttribute("repuestos", repuestos);
                     request.getRequestDispatcher("repuestos/lista.jsp").forward(request, response);
                     break;
@@ -59,6 +75,7 @@ public class RepuestoServlet extends HttpServlet {
             throw new ServletException("Error procesando acción: " + action, e);
         }
     }
+
 
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)

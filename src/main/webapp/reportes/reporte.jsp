@@ -91,7 +91,7 @@
 
 <h1>Reporte General del Sistema</h1>
 
-<a class="btn-inicio" href="inicio.jsp">🏠 Ir al Inicio</a>
+<a class="btn-inicio" href="inicio.jsp">Ir al Inicio</a>
 
 <h2>Clientes Registrados</h2>
 <table>

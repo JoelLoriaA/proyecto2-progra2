@@ -2,6 +2,7 @@
 <%@ page import="java.util.List, cr.ac.ucr.servicarpro.proyecto2.progra2.domain.Repuesto" %>
 <%
     List<Repuesto> repuestos = (List<Repuesto>) request.getAttribute("repuestos");
+    String filtro = request.getParameter("filtro") != null ? request.getParameter("filtro") : "";
 %>
 <!DOCTYPE html>
 <html>
@@ -37,7 +38,7 @@
         h2 {
             text-align: center;
             color: #ff3c00;
-            margin-bottom: 25px;
+            margin-bottom: 10px;
         }
 
         .top-link {
@@ -54,6 +55,42 @@
         }
 
         .top-link:hover {
+            background-color: #e03a00;
+        }
+
+        .search-form-container {
+            display: flex;
+            justify-content: flex-start;
+            margin-bottom: 20px;
+        }
+
+        form.search-form {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+
+        .search-input {
+            padding: 8px 12px;
+            border-radius: 4px;
+            border: none;
+            width: 300px;
+            font-size: 14px;
+            background-color: #1e1e1e;
+            color: #f1f1f1;
+        }
+
+        .search-button {
+            padding: 8px 14px;
+            background-color: #ff3c00;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .search-button:hover {
             background-color: #e03a00;
         }
 
@@ -141,7 +178,15 @@
 <a href="DashboardServlet" class="home-button"><i class="fas fa-home"></i> Inicio</a>
 
 <h2>Inventario de Repuestos</h2>
+
 <a class="top-link" href="RepuestoServlet?action=new">➕ Agregar Repuesto</a>
+
+<div class="search-form-container">
+    <form class="search-form" method="get" action="RepuestoServlet">
+        <input type="text" name="filtro" class="search-input" placeholder="Buscar por ID, nombre o descripción..." value="<%= filtro %>">
+        <input type="submit" class="search-button" value="Buscar">
+    </form>
+</div>
 
 <table>
     <tr>
@@ -190,4 +235,3 @@
 
 </body>
 </html>
-

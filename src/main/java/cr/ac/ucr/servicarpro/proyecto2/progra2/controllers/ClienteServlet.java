@@ -10,6 +10,7 @@ import jakarta.servlet.http.*;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @WebServlet(name = "ClienteServlet", urlPatterns = {"/ClienteServlet"})
 public class ClienteServlet extends HttpServlet {
@@ -31,25 +32,45 @@ public class ClienteServlet extends HttpServlet {
             throws ServletException, IOException {
 
         String action = request.getParameter("action") != null ? request.getParameter("action") : "list";
+        String filtro = request.getParameter("filtro") != null ? request.getParameter("filtro").trim().toLowerCase() : "";
 
         try {
             switch (action) {
                 case "new":
                     request.getRequestDispatcher("clientes/formulario.jsp").forward(request, response);
                     break;
+
                 case "edit":
                     int idEdit = Integer.parseInt(request.getParameter("id"));
                     Cliente clienteEdit = clienteDAO.findById(idEdit);
                     request.setAttribute("cliente", clienteEdit);
                     request.getRequestDispatcher("clientes/formulario.jsp").forward(request, response);
                     break;
+
                 case "delete":
                     int idDelete = Integer.parseInt(request.getParameter("id"));
                     clienteDAO.delete(idDelete);
-                    response.sendRedirect("ClienteServlet");
+                    // Redirigir manteniendo el filtro si existe
+                    if (!filtro.isEmpty()) {
+                        response.sendRedirect("ClienteServlet?filtro=" + filtro);
+                    } else {
+                        response.sendRedirect("ClienteServlet");
+                    }
                     break;
+
                 default:
                     List<Cliente> clientes = clienteDAO.findAll();
+
+                    if (!filtro.isEmpty()) {
+                        clientes = clientes.stream()
+                            .filter(c ->
+                                String.valueOf(c.getId()).contains(filtro) ||
+                                c.getNombre().toLowerCase().contains(filtro) ||
+                                c.getPrimerApellido().toLowerCase().contains(filtro) ||
+                                c.getSegundoApellido().toLowerCase().contains(filtro))
+                            .collect(Collectors.toList());
+                    }
+
                     request.setAttribute("clientes", clientes);
                     request.getRequestDispatcher("clientes/lista.jsp").forward(request, response);
                     break;
@@ -87,7 +108,14 @@ public class ClienteServlet extends HttpServlet {
             }
 
             clienteDAO.save(cliente);
-            response.sendRedirect("ClienteServlet");
+
+            // Redirigir respetando el filtro si existe
+            String filtro = request.getParameter("filtro");
+            if (filtro != null && !filtro.trim().isEmpty()) {
+                response.sendRedirect("ClienteServlet?filtro=" + filtro.trim());
+            } else {
+                response.sendRedirect("ClienteServlet");
+            }
 
         } catch (Exception e) {
             throw new ServletException("Error al guardar el cliente", e);
