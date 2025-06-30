@@ -6,21 +6,20 @@ import org.jdom2.JDOMException;
 import java.io.IOException;
 import java.util.Comparator;
 
-/**
- * DAO para acceder a los servicios almacenados en archivo XML.
- */
 public class ServicioDAO extends GenericXmlRepository<Servicio, Integer> {
 
     public ServicioDAO() throws JDOMException, IOException {
-        super(
-            System.getProperty("user.home") + "/movasystem/servicios.xml",
-            "servicios",                  // Tag raíz
-            "servicio",                   // Tag de cada entidad
-            Servicio::getId,              // Clave primaria
-            Comparator.comparing(Servicio::getNombre), // Orden alfabético por nombre
-            new ServicioMapper()          // Mapper personalizado
-        );
+        this(System.getProperty("user.home") + "/movasystem/servicios.xml");
     }
 
-    
+    public ServicioDAO(String filePath) throws JDOMException, IOException {
+        super(
+            filePath,
+            "servicios",                    // Tag raíz
+            "servicio",                     // Tag de cada entidad
+            Servicio::getId,                // Clave primaria
+            Comparator.comparing(Servicio::getNombre), // Orden por nombre
+            new ServicioMapper()            // Mapper
+        );
+    }
 }

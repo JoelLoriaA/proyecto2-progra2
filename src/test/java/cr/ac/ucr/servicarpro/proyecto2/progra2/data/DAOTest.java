@@ -20,9 +20,10 @@ public class DAOTest {
 
     @BeforeAll
     static void setup() throws IOException, JDOMException {
-        clienteDAO = new ClienteDAO();
-        servicioDAO = new ServicioDAO();
-        repuestoDAO = new RepuestoDAO();
+        String basePath = System.getProperty("user.home") + "/movasystem/test/";
+        clienteDAO = new ClienteDAO(basePath + "clientes.xml");
+        servicioDAO = new ServicioDAO(basePath + "servicios.xml");
+        repuestoDAO = new RepuestoDAO(basePath + "repuestos.xml");
     }
 
     @Test
@@ -111,4 +112,4 @@ public class DAOTest {
         assertNotNull(lista);
         assertTrue(lista.size() >= 0);
     }
-}
+}  
