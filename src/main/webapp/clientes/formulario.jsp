@@ -110,22 +110,22 @@
 
         <% if (!editando) { %>
             <label for="id">Cédula:</label>
-            <input type="text" name="id" id="id" value="" required/>
+            <input type="text" name="id" id="id" inputmode="numeric" pattern="[0-9]{1,15}" oninput="this.value = this.value.replace(/[^0-9]/g, '')" required />
         <% } else { %>
             <input type="hidden" name="id" value="<%= c.getId() %>"/>
         <% } %>
 
         <label for="nombre">Nombre:</label>
-        <input type="text" name="nombre" id="nombre" value="<%= editando ? c.getNombre() : "" %>" required/>
+        <input type="text" name="nombre" id="nombre" pattern="[A-Za-zÁÉÍÓÚáéíóúñÑ ]{1,}" oninput="this.value = this.value.replace(/[^a-zA-ZÁÉÍÓÚáéíóúñÑ ]/g, '')" value="<%= editando ? c.getNombre() : "" %>" required/>
 
         <label for="primerApellido">Primer Apellido:</label>
-        <input type="text" name="primerApellido" id="primerApellido" value="<%= editando ? c.getPrimerApellido() : "" %>" required/>
+        <input type="text" name="primerApellido" id="primerApellido" pattern="[A-Za-zÁÉÍÓÚáéíóúñÑ ]{1,}" oninput="this.value = this.value.replace(/[^a-zA-ZÁÉÍÓÚáéíóúñÑ ]/g, '')" value="<%= editando ? c.getPrimerApellido() : "" %>" required/>
 
         <label for="segundoApellido">Segundo Apellido:</label>
-        <input type="text" name="segundoApellido" id="segundoApellido" value="<%= editando ? c.getSegundoApellido() : "" %>" required/>
+        <input type="text" name="segundoApellido" id="segundoApellido" pattern="[A-Za-zÁÉÍÓÚáéíóúñÑ ]{1,}" oninput="this.value = this.value.replace(/[^a-zA-ZÁÉÍÓÚáéíóúñÑ ]/g, '')" value="<%= editando ? c.getSegundoApellido() : "" %>" required/>
 
         <label for="telefono">Teléfono:</label>
-        <input type="text" name="telefono" id="telefono" value="<%= editando ? c.getTelefono() : "" %>" required/>
+        <input type="text" name="telefono" id="telefono" inputmode="numeric" pattern="[0-9]{4,15}" oninput="this.value = this.value.replace(/[^0-9]/g, '')" value="<%= editando ? c.getTelefono() : "" %>" required/>
 
         <label for="direccion">Dirección:</label>
         <input type="text" name="direccion" id="direccion" value="<%= editando ? c.getDireccion() : "" %>" required/>

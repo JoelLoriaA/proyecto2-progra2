@@ -54,6 +54,10 @@
             font-size: 15px;
         }
 
+        input[type="text"]::placeholder {
+            color: #888;
+        }
+
         input[type="number"] {
             min: 0;
         }
@@ -111,16 +115,24 @@
     <% } %>
 
     <label for="nombre">Nombre:</label>
-    <input type="text" name="nombre" id="nombre" value="<%= editando ? s.getNombre() : "" %>" required/>
+    <input type="text" name="nombre" id="nombre"
+           pattern="[A-Za-zÁÉÍÓÚáéíóúñÑ ]{1,}"
+           oninput="this.value = this.value.replace(/[^a-zA-ZÁÉÍÓÚáéíóúñÑ ]/g, '')"
+           value="<%= editando ? s.getNombre() : "" %>" required/>
 
     <label for="descripcion">Descripción:</label>
-    <input type="text" name="descripcion" id="descripcion" value="<%= editando ? s.getDescripcion() : "" %>" required/>
+    <input type="text" name="descripcion" id="descripcion"
+           pattern="[A-Za-zÁÉÍÓÚáéíóúñÑ0-9 ,.-]{1,}"
+           oninput="this.value = this.value.replace(/[^a-zA-ZÁÉÍÓÚáéíóúñÑ0-9 ,.-]/g, '')"
+           value="<%= editando ? s.getDescripcion() : "" %>" required/>
 
     <label for="precio">Precio:</label>
-    <input type="number" step="0.01" min="0" name="precio" id="precio" value="<%= editando ? s.getPrecio() : "" %>" required/>
+    <input type="number" step="0.01" min="0" name="precio" id="precio"
+           value="<%= editando ? s.getPrecio() : "" %>" required/>
 
     <label for="costoManoObra">Costo de Mano de Obra:</label>
-    <input type="number" step="0.01" min="0" name="costoManoObra" id="costoManoObra" value="<%= editando ? s.getCostoManoObra() : "" %>" required/>
+    <input type="number" step="0.01" min="0" name="costoManoObra" id="costoManoObra"
+           value="<%= editando ? s.getCostoManoObra() : "" %>" required/>
 
     <input type="submit" value="Guardar"/>
 </form>

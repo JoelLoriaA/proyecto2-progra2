@@ -123,16 +123,24 @@
     <% } %>
 
     <label for="nombre">Nombre:</label>
-    <input type="text" name="nombre" id="nombre" value="<%= editando ? r.getNombre() : "" %>" required/>
+    <input type="text" name="nombre" id="nombre"
+           pattern="[A-Za-zÁÉÍÓÚáéíóúñÑ ]{1,}"
+           oninput="this.value = this.value.replace(/[^a-zA-ZÁÉÍÓÚáéíóúñÑ ]/g, '')"
+           value="<%= editando ? r.getNombre() : "" %>" required/>
 
     <label for="descripcion">Descripción:</label>
-    <input type="text" name="descripcion" id="descripcion" value="<%= editando ? r.getDescripcion() : "" %>" required/>
+    <input type="text" name="descripcion" id="descripcion"
+           pattern="[A-Za-zÁÉÍÓÚáéíóúñÑ0-9 ,.-]{1,}"
+           oninput="this.value = this.value.replace(/[^a-zA-ZÁÉÍÓÚáéíóúñÑ0-9 ,.-]/g, '')"
+           value="<%= editando ? r.getDescripcion() : "" %>" required/>
 
     <label for="precio">Precio:</label>
-    <input type="number" step="0.01" min="0" name="precio" id="precio" value="<%= editando ? r.getPrecio() : "" %>" required/>
+    <input type="number" step="0.01" min="0" name="precio" id="precio"
+           value="<%= editando ? r.getPrecio() : "" %>" required/>
 
     <label for="cantidadDisponible">Cantidad Disponible:</label>
-    <input type="number" min="0" name="cantidadDisponible" id="cantidadDisponible" value="<%= editando ? r.getCantidadDisponible() : "" %>" required/>
+    <input type="number" min="0" name="cantidadDisponible" id="cantidadDisponible"
+           value="<%= editando ? r.getCantidadDisponible() : "" %>" required/>
 
     <div class="checkbox-group">
         <input type="checkbox" name="pedido" id="pedido" <%= (editando && r.isPedido()) ? "checked" : "" %> />

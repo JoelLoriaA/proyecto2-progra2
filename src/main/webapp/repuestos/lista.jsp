@@ -175,7 +175,7 @@
 </head>
 <body>
 
-<a href="DashboardServlet" class="home-button"><i class="fas fa-home"></i> Inicio</a>
+<a href="inicio.jsp" class="home-button"><i class="fas fa-home"></i> Inicio</a>
 
 <h2>Inventario de Repuestos</h2>
 
