@@ -12,8 +12,8 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
-@WebServlet(name = "OrdenServlet", urlPatterns = {"/OrdenServlet"})
-public class OrdenServlet extends HttpServlet {
+@WebServlet(name = "OrdenDeTrabajoServlet", urlPatterns = {"/OrdenDeTrabajoServlet"})
+public class OrdenDeTrabajoServlet extends HttpServlet {
 
     private OrdenTrabajoService ordenService;
     private VehiculoService vehiculoService;
@@ -68,6 +68,22 @@ public class OrdenServlet extends HttpServlet {
             String fechaDevolucionStr = request.getParameter("fechaDevolucion");
             String idOrdenStr = request.getParameter("idOrden");
 
+            // Si es una edición, validar estado antes de procesar detalles
+            if (idOrdenStr != null && !idOrdenStr.isEmpty()) {
+                int idOrden = Integer.parseInt(idOrdenStr);
+                OrdenDeTrabajo ordenExistente = ordenService.buscarPorId(idOrden);
+
+                if (ordenExistente != null && !puedeModificarDetalles(ordenExistente)) {
+                    request.setAttribute("error",
+                            "No se pueden agregar/modificar repuestos/servicios. Estado actual: " +
+                                    ordenExistente.getEstado().getDescripcion());
+                    request.setAttribute("orden", ordenExistente);
+                    cargarDatosFormulario(request);
+                    request.getRequestDispatcher("ordenes/formulario.jsp").forward(request, response);
+                    return;
+                }
+            }
+
             // Procesar detalles
             List<DetalleOrden> detalles = procesarDetalles(request);
 
@@ -97,7 +113,7 @@ public class OrdenServlet extends HttpServlet {
                 ordenService.crearOrden(orden);
             }
 
-            response.sendRedirect("OrdenServlet");
+            response.sendRedirect("OrdenDeTrabajoServlet");
 
         } catch (Exception e) {
             request.setAttribute("error", "Error al procesar la orden: " + e.getMessage());
@@ -106,40 +122,66 @@ public class OrdenServlet extends HttpServlet {
         }
     }
 
+    /**
+     * Valida si se pueden modificar los detalles de una orden según su estado
+     */
+    private boolean puedeModificarDetalles(OrdenDeTrabajo orden) {
+        // Estados que permiten modificación:
+        // 1: Recibida/Diagnóstico, 2: En reparación, 3: En espera de repuestos
+        return orden.getEstado().getId() < 4;
+    }
+
+    /**
+     * Valida si una orden está completada (estado >= 4)
+     */
+    private boolean estaOrdenCompletada(OrdenDeTrabajo orden) {
+        // Estados completados: 4: Entregado, 5: Cancelado
+        return orden.getEstado().getId() >= 4;
+    }
+
     private List<DetalleOrden> procesarDetalles(HttpServletRequest request) {
         List<DetalleOrden> detalles = new ArrayList<>();
 
         String[] tiposDetalle = request.getParameterValues("tipoDetalle");
         String[] cantidades = request.getParameterValues("cantidad");
-        String[] observacionesDetalle = request.getParameterValues("observacionesDetalle");
+        String[] observaciones = request.getParameterValues("observaciones");
         String[] precios = request.getParameterValues("precio");
-        String[] descripciones = request.getParameterValues("descripcion");
-        String[] costosManoPbra = request.getParameterValues("costoManoObra");
+        String[] nombresRepuesto = request.getParameterValues("nombreRepuesto");
+        String[] costosManObra = request.getParameterValues("costoManoObra");
+        String[] repuestosPedido = request.getParameterValues("repuestoPedido");
 
         if (tiposDetalle != null) {
             for (int i = 0; i < tiposDetalle.length; i++) {
                 if (cantidades[i] != null && !cantidades[i].isEmpty()) {
                     DetalleOrden detalle = new DetalleOrden();
                     detalle.setCantidad(Integer.parseInt(cantidades[i]));
-                    detalle.setObservaciones(observacionesDetalle[i]);
+                    detalle.setObservaciones(observaciones != null && i < observaciones.length ? observaciones[i] : "");
                     detalle.setPrecio(Double.parseDouble(precios[i]));
-                    detalle.setNombreRepuesto(descripciones[i]);
-                    detalle.setCostoManoObra(costosManoPbra[i] != null ?
-                            Double.parseDouble(costosManoPbra[i]) : 0.0);
+                    detalle.setNombreRepuesto(nombresRepuesto[i]);
+                    detalle.setCostoManoObra(costosManObra != null && i < costosManObra.length && !costosManObra[i].isEmpty() ?
+                            Double.parseDouble(costosManObra[i]) : 0.0);
+
+                    // Verificar si el repuesto está pedido
+                    boolean pedido = false;
+                    if (repuestosPedido != null) {
+                        for (String rp : repuestosPedido) {
+                            if (("on".equals(rp) || "true".equals(rp)) && repuestosPedido.length > i) {
+                                pedido = true;
+                                break;
+                            }
+                        }
+                    }
+                    detalle.setRepuestoPedido(pedido);
 
                     // Configurar tipo de detalle
                     TipoDetalle tipo = new TipoDetalle();
-                    if ("REPUESTO".equals(tiposDetalle[i])) {
-                        tipo.setId(1);
-                        tipo.setNombre("REPUESTO");
-                    } else {
-                        tipo.setId(2);
-                        tipo.setNombre("SERVICIO");
-                    }
+                    int tipoId = Integer.parseInt(tiposDetalle[i]);
+                    tipo.setId(tipoId);
+                    tipo.setNombre(tipoId == 1 ? "Repuesto" : "Servicio");
                     detalle.setTipoDetalle(tipo);
 
                     // Estado inicial
-                    Estado estado = new Estado(1, "PENDIENTE");
+                    Estado estado = new Estado(1, "Pendiente");
                     detalle.setEstado(estado);
 
                     detalles.add(detalle);
@@ -157,9 +199,10 @@ public class OrdenServlet extends HttpServlet {
 
         if (filtro != null && !filtro.trim().isEmpty()) {
             ordenes = ordenService.listarOrdenes().stream()
-                    .filter(o -> o.getIdOrden() == Integer.parseInt(filtro) ||
+                    .filter(o -> String.valueOf(o.getIdOrden()).contains(filtro) ||
                             o.getNumeroPlaca().toLowerCase().contains(filtro.toLowerCase()) ||
-                            o.getDescripcionSolicitud().toLowerCase().contains(filtro.toLowerCase()))
+                            o.getDescripcionSolicitud().toLowerCase().contains(filtro.toLowerCase()) ||
+                            String.valueOf(o.getIdCliente()).contains(filtro))
                     .toList();
         } else {
             ordenes = ordenService.listarOrdenes();
@@ -187,7 +230,16 @@ public class OrdenServlet extends HttpServlet {
             return;
         }
 
+        // Verificar si la orden está completada
+        if (estaOrdenCompletada(orden)) {
+            request.setAttribute("error",
+                    "No se puede editar una orden que ya fue " + orden.getEstado().getDescripcion().toLowerCase());
+            mostrarDetalle(request, response);
+            return;
+        }
+
         request.setAttribute("orden", orden);
+        request.setAttribute("puedeModificarDetalles", puedeModificarDetalles(orden));
         cargarDatosFormulario(request);
         request.getRequestDispatcher("ordenes/formulario.jsp").forward(request, response);
     }
@@ -204,6 +256,7 @@ public class OrdenServlet extends HttpServlet {
         }
 
         request.setAttribute("orden", orden);
+        request.setAttribute("puedeModificarDetalles", puedeModificarDetalles(orden));
         request.getRequestDispatcher("ordenes/detalle.jsp").forward(request, response);
     }
 
@@ -214,30 +267,64 @@ public class OrdenServlet extends HttpServlet {
 
         Estado nuevoEstado;
         switch (nuevoEstadoId) {
-            case 1: nuevoEstado = new Estado(1, "Diagnóstico"); break;
+            case 1: nuevoEstado = new Estado(1, "Recibida"); break;
             case 2: nuevoEstado = new Estado(2, "En reparación"); break;
-            case 3: nuevoEstado = new Estado(3, "Listo para entrega"); break;
+            case 3: nuevoEstado = new Estado(3, "En espera de repuestos"); break;
             case 4: nuevoEstado = new Estado(4, "Entregado"); break;
             case 5: nuevoEstado = new Estado(5, "Cancelado"); break;
             default: throw new IllegalArgumentException("Estado no válido");
         }
 
+        // Si se está cambiando a estado completado (4 o 5), agregar una confirmación
+        if (nuevoEstadoId >= 4) {
+            OrdenDeTrabajo orden = ordenService.buscarPorId(idOrden);
+            if (orden != null) {
+                System.out.println("Orden #" + idOrden + " marcada como " + nuevoEstado.getDescripcion() +
+                        ". Ya no se podrán agregar más repuestos/servicios.");
+            }
+        }
+
         ordenService.cambiarEstadoOrden(idOrden, nuevoEstado);
-        response.sendRedirect("OrdenServlet?action=detalle&id=" + idOrden);
+        response.sendRedirect("OrdenDeTrabajoServlet?action=detalle&id=" + idOrden);
     }
 
     private void eliminarOrden(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         int idOrden = Integer.parseInt(request.getParameter("id"));
+
+        // Verificar si la orden existe antes de eliminar
+        OrdenDeTrabajo orden = ordenService.buscarPorId(idOrden);
+        if (orden == null) {
+            request.setAttribute("error", "La orden de trabajo no existe");
+            listarOrdenes(request, response);
+            return;
+        }
+
+        // Eliminar la orden
         ordenService.borrarOrden(idOrden);
-        response.sendRedirect("OrdenServlet");
+        response.sendRedirect("OrdenDeTrabajoServlet");
     }
 
     private void cargarDatosFormulario(HttpServletRequest request) {
-        List<Vehiculo> vehiculos = vehiculoService.listarVehiculos();
-        List<Cliente> clientes = clienteService.listarClientes();
+        try {
+            // Obtener vehículos como Object[] con placa, marca, estilo, dueño
+            List<Vehiculo> vehiculosList = vehiculoService.listarVehiculos();
+            List<Object[]> vehiculos = vehiculosList.stream()
+                    .map(v -> new Object[]{v.getNumeroPlaca(), v.getMarca(), v.getEstilo(), v.getDuenio()})
+                    .toList();
 
-        request.setAttribute("vehiculos", vehiculos);
-        request.setAttribute("clientes", clientes);
+            // Obtener clientes como Object[] con id, nombre, apellido
+            List<Cliente> clientesList = clienteService.listarClientes();
+            List<Object[]> clientes = clientesList.stream()
+                    .map(c -> new Object[]{c.getId(), c.getNombre(), c.getPrimerApellido(), c.getSegundoApellido()})
+                    .toList();
+
+            request.setAttribute("vehiculos", vehiculos);
+            request.setAttribute("clientes", clientes);
+        } catch (Exception e) {
+            System.err.println("Error cargando datos para formulario: " + e.getMessage());
+            request.setAttribute("vehiculos", new ArrayList<>());
+            request.setAttribute("clientes", new ArrayList<>());
+        }
     }
-}            
+}

@@ -151,7 +151,7 @@
         <i class="fas fa-file-invoice"></i>
         <h3>Órdenes de Trabajo</h3>
         <p>Gestionar órdenes de reparación de vehículos.</p>
-        <a href="OrdenServlet">Ver Órdenes</a>
+        <a href="OrdenDeTrabajoServlet">Ver Órdenes</a>
     </div>
 
     <div class="card">

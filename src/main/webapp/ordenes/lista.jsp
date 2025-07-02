@@ -50,7 +50,7 @@
 
 <h2><i class="fas fa-clipboard-list"></i> Órdenes de Trabajo</h2>
 
-<a class="top-link" href="OrdenDeTrabajoServlet?action=new">
+<a class="top-link" href="OrdenDeTrabajoServlet?action=nuevo">
     <i class="fas fa-plus"></i> Nueva Orden de Trabajo
 </a>
 
@@ -86,15 +86,15 @@
             </span>
         </td>
         <td>
-            <a class="action-btn view-btn" href="OrdenDeTrabajoServlet?action=view&id=<%= orden.getIdOrden() %>">
+           <a class="action-btn view-btn" href="OrdenDeTrabajoServlet?action=detalle&id=<%= orden.getIdOrden() %>">
                 <i class="fas fa-eye"></i> Ver
             </a>
             <% if (orden.getEstado().getId() < 4) { %>
-            <a class="action-btn edit-btn" href="OrdenDeTrabajoServlet?action=edit&id=<%= orden.getIdOrden() %>">
+            <a class="action-btn edit-btn" href="OrdenDeTrabajoServlet?action=editar&id=<%= orden.getIdOrden() %>">
                 <i class="fas fa-edit"></i> Editar
             </a>
             <% } %>
-            <a class="action-btn delete-btn" href="OrdenDeTrabajoServlet?action=delete&id=<%= orden.getIdOrden() %>"
+            <a class="action-btn delete-btn" href="OrdenDeTrabajoServlet?action=eliminar&id=<%= orden.getIdOrden() %>"
                onclick="return confirm('¿Está seguro de eliminar esta orden de trabajo?')">
                 <i class="fas fa-trash"></i> Eliminar
             </a>
