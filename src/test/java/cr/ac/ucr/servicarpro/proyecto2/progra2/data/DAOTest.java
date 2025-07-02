@@ -1,5 +1,8 @@
 package cr.ac.ucr.servicarpro.proyecto2.progra2.data;
 
+import cr.ac.ucr.servicarpro.proyecto2.progra2.data.dao.ClienteDAO;
+import cr.ac.ucr.servicarpro.proyecto2.progra2.data.dao.RepuestoDAO;
+import cr.ac.ucr.servicarpro.proyecto2.progra2.data.dao.ServicioDAO;
 import cr.ac.ucr.servicarpro.proyecto2.progra2.domain.Cliente;
 import cr.ac.ucr.servicarpro.proyecto2.progra2.domain.Repuesto;
 import cr.ac.ucr.servicarpro.proyecto2.progra2.domain.Servicio;

@@ -3,7 +3,7 @@ package cr.ac.ucr.servicarpro.proyecto2.progra2.servicies;
 import java.io.IOException;
 import java.util.List;
 
-import cr.ac.ucr.servicarpro.proyecto2.progra2.data.ClienteDAO;
+import cr.ac.ucr.servicarpro.proyecto2.progra2.data.dao.ClienteDAO;
 import cr.ac.ucr.servicarpro.proyecto2.progra2.data.XmlRepositoryException;
 import cr.ac.ucr.servicarpro.proyecto2.progra2.domain.Cliente;
 

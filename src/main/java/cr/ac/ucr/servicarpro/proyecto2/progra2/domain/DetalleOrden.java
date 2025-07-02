@@ -15,6 +15,18 @@ public class DetalleOrden {
     public DetalleOrden() {
     }
 
+    public DetalleOrden(int cantidad, String observaciones, int idOrdenTrabajo, TipoDetalle tipoDetalle, Estado estado, double precio, String nombreRepuesto, boolean repuestoPedido, double costoManoObra) {
+        this.cantidad = cantidad;
+        this.observaciones = observaciones;
+        this.idOrdenTrabajo = idOrdenTrabajo;
+        this.tipoDetalle = tipoDetalle;
+        this.estado = estado;
+        this.precio = precio;
+        this.nombreRepuesto = nombreRepuesto;
+        this.repuestoPedido = repuestoPedido;
+        this.costoManoObra = costoManoObra;
+    }
+
     public DetalleOrden(int idDetalleOrden, int cantidad, String observaciones, int idOrdenTrabajo,
                         TipoDetalle tipoDetalle, Estado estado, double precio, String nombreRepuesto,
                         boolean repuestoPedido, double costoManoObra) {

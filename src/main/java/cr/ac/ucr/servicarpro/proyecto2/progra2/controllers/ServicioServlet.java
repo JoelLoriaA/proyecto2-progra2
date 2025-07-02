@@ -1,9 +1,7 @@
 package cr.ac.ucr.servicarpro.proyecto2.progra2.controllers;
 
-import cr.ac.ucr.servicarpro.proyecto2.progra2.data.RepuestoDAO;
-import cr.ac.ucr.servicarpro.proyecto2.progra2.data.ServicioDAO;
+import cr.ac.ucr.servicarpro.proyecto2.progra2.data.dao.ServicioDAO;
 import cr.ac.ucr.servicarpro.proyecto2.progra2.domain.Servicio;
-import org.jdom2.JDOMException;
 
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;

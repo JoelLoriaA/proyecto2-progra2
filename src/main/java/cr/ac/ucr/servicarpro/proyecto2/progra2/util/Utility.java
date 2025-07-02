@@ -1,6 +1,6 @@
 package cr.ac.ucr.servicarpro.proyecto2.progra2.util;
 
-import cr.ac.ucr.servicarpro.proyecto2.progra2.data.ClienteMapper;
+import cr.ac.ucr.servicarpro.proyecto2.progra2.data.mappers.ClienteMapper;
 import cr.ac.ucr.servicarpro.proyecto2.progra2.data.GenericXmlRepository;
 import cr.ac.ucr.servicarpro.proyecto2.progra2.data.XmlRepositoryException;
 import cr.ac.ucr.servicarpro.proyecto2.progra2.domain.Cliente;

@@ -6,6 +6,10 @@ public class Estado {
 
     public Estado() {}
 
+    public Estado(String descripcion) {
+        this.descripcion = descripcion;
+    }
+
     public Estado(int id, String descripcion) {
         this.id = id;
         this.descripcion = descripcion;

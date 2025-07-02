@@ -1,4 +1,4 @@
-package cr.ac.ucr.servicarpro.proyecto2.progra2.data;
+package cr.ac.ucr.servicarpro.proyecto2.progra2.data.mappers;
 
 import org.jdom2.Element;
 

@@ -1,6 +1,6 @@
 package cr.ac.ucr.servicarpro.proyecto2.progra2.controllers;
 
-import cr.ac.ucr.servicarpro.proyecto2.progra2.data.ClienteDAO;
+import cr.ac.ucr.servicarpro.proyecto2.progra2.data.dao.ClienteDAO;
 import cr.ac.ucr.servicarpro.proyecto2.progra2.domain.Cliente;
 import org.jdom2.JDOMException;
 

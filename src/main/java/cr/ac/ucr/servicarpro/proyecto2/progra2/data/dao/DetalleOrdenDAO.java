@@ -2,8 +2,10 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
  * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
  */
-package cr.ac.ucr.servicarpro.proyecto2.progra2.data;
+package cr.ac.ucr.servicarpro.proyecto2.progra2.data.dao;
 
+import cr.ac.ucr.servicarpro.proyecto2.progra2.data.mappers.DetalleOrdenMapper;
+import cr.ac.ucr.servicarpro.proyecto2.progra2.data.GenericXmlRepository;
 import cr.ac.ucr.servicarpro.proyecto2.progra2.domain.DetalleOrden;
 import org.jdom2.JDOMException;
 import java.io.IOException;

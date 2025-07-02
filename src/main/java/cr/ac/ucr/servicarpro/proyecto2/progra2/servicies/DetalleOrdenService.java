@@ -5,7 +5,7 @@
 package cr.ac.ucr.servicarpro.proyecto2.progra2.servicies;
 
 
-import cr.ac.ucr.servicarpro.proyecto2.progra2.data.DetalleOrdenDAO;
+import cr.ac.ucr.servicarpro.proyecto2.progra2.data.dao.DetalleOrdenDAO;
 import cr.ac.ucr.servicarpro.proyecto2.progra2.domain.DetalleOrden;
 import org.jdom2.JDOMException;
 import java.io.IOException;
@@ -30,13 +30,15 @@ public class DetalleOrdenService {
         detalleOrdenDAO.edit(detalle);
     }
 
-    public void eliminarDetalle(int idDetalleOrden) {
+    public void eliminarDetalle(int idDetalleOrden) throws IOException {
         List<DetalleOrden> detalles = detalleOrdenDAO.findAll()
             .stream()
             .filter(d -> d.getIdDetalleOrden() != idDetalleOrden)
             .collect(Collectors.toList());
         // Limpiar y reinsertar todos menos el eliminado
-       // detalles.forEach(detalleOrdenDAO::insertOrUpdate);
+        for (DetalleOrden detalle : detalles) {
+            detalleOrdenDAO.insertOrUpdate(detalle);
+        }
     }
 
     public List<DetalleOrden> listarDetallesPorOrden(int idOrdenTrabajo) {

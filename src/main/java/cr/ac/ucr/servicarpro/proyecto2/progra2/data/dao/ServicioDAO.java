@@ -1,5 +1,7 @@
-package cr.ac.ucr.servicarpro.proyecto2.progra2.data;
+package cr.ac.ucr.servicarpro.proyecto2.progra2.data.dao;
 
+import cr.ac.ucr.servicarpro.proyecto2.progra2.data.GenericXmlRepository;
+import cr.ac.ucr.servicarpro.proyecto2.progra2.data.mappers.ServicioMapper;
 import cr.ac.ucr.servicarpro.proyecto2.progra2.domain.Servicio;
 import org.jdom2.JDOMException;
 

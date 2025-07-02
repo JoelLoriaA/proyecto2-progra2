@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.function.Function;
 
+import cr.ac.ucr.servicarpro.proyecto2.progra2.data.mappers.EntityMapper;
 import org.jdom2.Document;
 import org.jdom2.Element;
 import org.jdom2.JDOMException;
@@ -92,6 +93,7 @@ public class GenericXmlRepository<T, K extends Comparable<K>> {
         }
     }
 
+    //Busqueda binaria para encontrar una entidad por su clave
     public Optional<T> findByKey(K key) {
         List<Element> elements = root.getChildren(entityTag);
 

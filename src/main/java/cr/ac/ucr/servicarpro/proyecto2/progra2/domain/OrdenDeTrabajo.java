@@ -6,12 +6,12 @@ import java.util.List;
 import java.util.Objects;
 
 public class OrdenDeTrabajo {
-    private String idOrden;
+    private int idOrden;
     private String descripcionSolicitud;
     private LocalDate fechaIngreso;
     private Estado estado; // "Diagnóstico", "En reparación", "Listo para entrega"
-    private String codigoVehiculo;
-    private String codigoCliente;
+    private String numeroPlaca;
+    private int idCliente;
     private String observacionesRecepcion;
     private List<DetalleOrden> detalles;
 
@@ -21,33 +21,33 @@ public class OrdenDeTrabajo {
     }
 
 
-    public OrdenDeTrabajo(String descripcionSolicitud, LocalDate fechaIngreso, Estado estado, String codigoVehiculo, String codigoCliente, String observacionesRecepcion, List<DetalleOrden> detalles) {
+    public OrdenDeTrabajo(String descripcionSolicitud, LocalDate fechaIngreso, Estado estado, String numeroPlaca, int idCliente, String observacionesRecepcion, List<DetalleOrden> detalles) {
         this.descripcionSolicitud = descripcionSolicitud;
         this.fechaIngreso = fechaIngreso;
         this.estado = estado;
-        this.codigoVehiculo = codigoVehiculo;
-        this.codigoCliente = codigoCliente;
+        this.numeroPlaca = numeroPlaca;
+        this.idCliente = idCliente;
         this.observacionesRecepcion = observacionesRecepcion;
         this.detalles = detalles;
     }
 
-    public OrdenDeTrabajo(String codigoOrden, String descripcionSolicitud, LocalDate fechaIngreso, Estado estado, String codigoVehiculo, String codigoCliente, String observacionesRecepcion, List<DetalleOrden> detalles) {
+    public OrdenDeTrabajo(int codigoOrden, String descripcionSolicitud, LocalDate fechaIngreso, Estado estado, String numeroPlaca, int idCliente, String observacionesRecepcion, List<DetalleOrden> detalles) {
         this.idOrden = codigoOrden;
         this.descripcionSolicitud = descripcionSolicitud;
         this.fechaIngreso = fechaIngreso;
         this.estado = estado;
-        this.codigoVehiculo = codigoVehiculo;
-        this.codigoCliente = codigoCliente;
+        this.numeroPlaca = numeroPlaca;
+        this.idCliente = idCliente;
         this.observacionesRecepcion = observacionesRecepcion;
         this.detalles = detalles;
     }
 
     // Getters y Setters
-    public String getIdOrden() {
+    public int getIdOrden() {
         return idOrden;
     }
 
-    public void setIdOrden(String idOrden) {
+    public void setIdOrden(int idOrden) {
         this.idOrden = idOrden;
     }
 
@@ -75,20 +75,20 @@ public class OrdenDeTrabajo {
         this.estado = estado;
     }
 
-    public String getCodigoVehiculo() {
-        return codigoVehiculo;
+    public String getNumeroPlaca() {
+        return numeroPlaca;
     }
 
-    public void setCodigoVehiculo(String codigoVehiculo) {
-        this.codigoVehiculo = codigoVehiculo;
+    public void setNumeroPlaca(String numeroPlaca) {
+        this.numeroPlaca = numeroPlaca;
     }
 
-    public String getCodigoCliente() {
-        return codigoCliente;
+    public int getIdCliente() {
+        return idCliente;
     }
 
-    public void setCodigoCliente(String codigoCliente) {
-        this.codigoCliente = codigoCliente;
+    public void setIdCliente(int idCliente) {
+        this.idCliente = idCliente;
     }
 
     public String getObservacionesRecepcion() {
@@ -101,15 +101,14 @@ public class OrdenDeTrabajo {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         OrdenDeTrabajo that = (OrdenDeTrabajo) o;
-        return Objects.equals(idOrden, that.idOrden);
+        return getIdOrden() == that.getIdOrden() && getIdCliente() == that.getIdCliente() && Objects.equals(getDescripcionSolicitud(), that.getDescripcionSolicitud()) && Objects.equals(getFechaIngreso(), that.getFechaIngreso()) && Objects.equals(getEstado(), that.getEstado()) && Objects.equals(getNumeroPlaca(), that.getNumeroPlaca()) && Objects.equals(getObservacionesRecepcion(), that.getObservacionesRecepcion()) && Objects.equals(getDetalles(), that.getDetalles());
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(idOrden);
+        return Objects.hash(getIdOrden(), getDescripcionSolicitud(), getFechaIngreso(), getEstado(), getNumeroPlaca(), getIdCliente(), getObservacionesRecepcion(), getDetalles());
     }
 
     @Override
@@ -119,10 +118,18 @@ public class OrdenDeTrabajo {
                 ", descripcionSolicitud='" + descripcionSolicitud + '\'' +
                 ", fechaIngreso=" + fechaIngreso +
                 ", estado='" + estado + '\'' +
-                ", codigoVehiculo='" + codigoVehiculo + '\'' +
-                ", codigoCliente='" + codigoCliente + '\'' +
+                ", codigoVehiculo='" + numeroPlaca + '\'' +
+                ", codigoCliente='" + idCliente + '\'' +
                 ", observacionesRecepcion='" + observacionesRecepcion + '\'' +
                 ", detalles=" + detalles.size() + " items" +
                 '}';
+    }
+
+    public List<DetalleOrden> getDetalles() {
+        return detalles;
+    }
+
+    public void setDetalles(List<DetalleOrden> detalles) {
+        this.detalles = detalles;
     }
 }

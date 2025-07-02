@@ -6,6 +6,10 @@ public class TipoDetalle {
 
     public TipoDetalle() {}
 
+    public TipoDetalle(String nombre) {
+        this.nombre = nombre;
+    }
+
     public TipoDetalle(int id, String nombre) {
         this.id = id;
         this.nombre = nombre;
