@@ -1,386 +1,609 @@
 <%@ page contentType="text/html;charset=UTF-8" %>
-        <%@ page import="cr.ac.ucr.servicarpro.proyecto2.progra2.domain.*" %>
-        <%@ page import="java.util.List" %>
-        <%@ page import="java.time.LocalDate" %>
-        <%
-            OrdenDeTrabajo orden = (OrdenDeTrabajo) request.getAttribute("orden");
-            List<Object[]> vehiculos = (List<Object[]>) request.getAttribute("vehiculos");
-            List<Object[]> clientes = (List<Object[]>) request.getAttribute("clientes");
-            boolean editando = (orden != null);
-            String error = (String) request.getAttribute("error");
-            Boolean puedeModificarDetalles = (Boolean) request.getAttribute("puedeModificarDetalles");
-            boolean puedeEditar = puedeModificarDetalles == null || puedeModificarDetalles;
-        %>
-        <!DOCTYPE html>
-        <html>
-        <head>
-            <meta charset="UTF-8">
-            <title><%= editando ? "Editar Orden de Trabajo" : "Nueva Orden de Trabajo" %></title>
-            <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
-            <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
-            <style>
-                body { font-family: 'Roboto', sans-serif; background: #121212; color: #f1f1f1; padding: 20px; }
-                .form-container { max-width: 800px; margin: 0 auto; background: #1e1e1e; padding: 30px; border-radius: 10px; box-shadow: 0 0 18px rgba(255,60,0,0.4); border: 1px solid #333; }
-                h2 { text-align: center; color: #ff3c00; margin-bottom: 25px; }
-                .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 25px; }
-                .form-group { display: flex; flex-direction: column; }
-                .form-group.full-width { grid-column: 1 / -1; }
-                label { margin-bottom: 5px; color: #bbbbbb; font-weight: 500; }
-                input, select, textarea { padding: 10px; border: 1px solid #444; border-radius: 5px; background: #2c2c2c; color: #fff; }
-                textarea { resize: vertical; min-height: 80px; }
-                .detalles-section { margin-top: 30px; }
-                .detalles-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
-                .detalles-header h3 { color: #ff3c00; margin: 0; }
-                .add-detalle-btn { background: #27ae60; color: white; border: none; padding: 8px 15px; border-radius: 5px; cursor: pointer; }
-                .add-detalle-btn:hover { background: #1e8449; }
-                .add-detalle-btn:disabled { background: #666; cursor: not-allowed; opacity: 0.6; }
-                .detalle-item {
-                    background: #2a2a2a;
-                    border: 1px solid #444;
-                    border-radius: 8px;
-                    padding: 30px 15px 15px 15px;
-                    margin-bottom: 15px;
-                    position: relative;
-                }
-                .detalle-item:hover {
-                    border-color: #ff3c00;
-                    box-shadow: 0 0 8px rgba(255, 60, 0, 0.3);
-                }
-                .detalle-grid { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 10px; }
-                .detalle-grid .form-group { margin-bottom: 10px; }
-                .remove-detalle-btn {
-                    position: absolute;
-                    top: 8px;
-                    right: 8px;
-                    background: #e74c3c;
-                    color: white;
-                    border: none;
-                    width: 24px;
-                    height: 24px;
-                    border-radius: 50%;
-                    cursor: pointer;
-                    font-size: 14px;
-                    font-weight: bold;
-                    display: flex;
-                    align-items: center;
-                    justify-content: center;
-                    transition: background-color 0.3s;
-                }
-                .remove-detalle-btn:hover {
-                    background: #c0392b;
-                    transform: scale(1.1);
-                }
-                .totales { background: #2a2a2a; padding: 15px; border-radius: 8px; margin-top: 20px; }
-                .totales h4 { color: #ff3c00; margin: 0 0 10px 0; }
-                .total-row { display: flex; justify-content: space-between; margin-bottom: 5px; }
-                .total-final { font-weight: bold; font-size: 18px; color: #27ae60; border-top: 1px solid #444; padding-top: 10px; margin-top: 10px; }
-                .submit-btn { background: #ff3c00; color: #fff; font-weight: 600; cursor: pointer; border: none; padding: 12px 30px; border-radius: 5px; margin-top: 20px; width: 100%; }
-                .submit-btn:hover { background: #e03a00; }
-                .back-link { display: block; text-align: center; margin-top: 20px; color: #ff3c00; text-decoration: none; }
-                .back-link:hover { color: #ffa07a; }
-                .error-message { color: #ff4d4d; background-color: #2a2a2a; border: 1px solid #ff4d4d; padding: 10px; margin-bottom: 20px; border-radius: 6px; text-align: center; }
-                .alert-warning {
-                    background-color: #f39c12;
-                    color: white;
-                    padding: 10px 15px;
-                    border-radius: 5px;
-                    margin: 10px 0;
-                    display: flex;
-                    align-items: center;
-                    gap: 8px;
-                }
-                .alert-info {
-                    background-color: #3498db;
-                    color: white;
-                    padding: 10px 15px;
-                    border-radius: 5px;
-                    margin: 10px 0;
-                    display: flex;
-                    align-items: center;
-                    gap: 8px;
-                }
-            </style>
-        </head>
-        <body>
-        <div class="form-container">
-            <h2><%= editando ? "Editar" : "Nueva" %> Orden de Trabajo</h2>
-
-            <form id="ordenForm" action="OrdenDeTrabajoServlet" method="post">
-                <% if (error != null) { %>
-                <div class="error-message"><%= error %></div>
-                <% } %>
-
-                <% if (editando && !puedeEditar) { %>
-                <div class="alert-warning">
-                    <i class="fas fa-exclamation-triangle"></i>
-                    No se pueden agregar más repuestos/servicios. Estado actual: <%= orden.getEstado().getDescripcion() %>
-                </div>
-                <% } else if (editando && puedeEditar) { %>
-                <div class="alert-info">
-                    <i class="fas fa-info-circle"></i>
-                    Puede agregar repuestos/servicios mientras el vehículo esté en el taller.
-                </div>
-                <% } %>
-
-                <% if (editando) { %>
-                <input type="hidden" name="idOrden" value="<%= orden.getIdOrden() %>"/>
-                <% } %>
-
-                <div class="form-grid">
-                    <div class="form-group">
-                        <label for="numeroPlaca">Vehículo (Placa):</label>
-                        <select name="numeroPlaca" id="numeroPlaca" required <%= editando ? "disabled" : "" %>>
-                            <option value="">Seleccione un vehículo</option>
-                            <% if (vehiculos != null) {
-                                for (Object[] vehiculo : vehiculos) { %>
-                            <option value="<%= vehiculo[0] %>"
-                                    <%= editando && orden.getNumeroPlaca().equals(vehiculo[0]) ? "selected" : "" %>>
-                                <%= vehiculo[0] %> - <%= vehiculo[1] %> <%= vehiculo[2] %> (<%= vehiculo[3] %>)
-                            </option>
-                            <% }
-                            } %>
-                        </select>
-                        <% if (editando) { %>
-                        <input type="hidden" name="numeroPlaca" value="<%= orden.getNumeroPlaca() %>"/>
-                        <% } %>
-                    </div>
-
-                    <div class="form-group">
-                        <label for="idCliente">Cliente:</label>
-                        <select name="idCliente" id="idCliente" required <%= editando ? "disabled" : "" %>>
-                            <option value="">Seleccione un cliente</option>
-                            <% if (clientes != null) {
-                                for (Object[] cliente : clientes) { %>
-                            <option value="<%= cliente[0] %>"
-                                    <%= editando && orden.getIdCliente() == (Integer)cliente[0] ? "selected" : "" %>>
-                                <%= cliente[0] %> - <%= cliente[1] %> <%= cliente[2] %>
-                            </option>
-                            <% }
-                            } %>
-                        </select>
-                        <% if (editando) { %>
-                        <input type="hidden" name="idCliente" value="<%= orden.getIdCliente() %>"/>
-                        <% } %>
-                    </div>
-
-                    <div class="form-group full-width">
-                        <label for="descripcionSolicitud">Descripción de la Solicitud:</label>
-                        <textarea name="descripcionSolicitud" id="descripcionSolicitud" required><%= editando ? orden.getDescripcionSolicitud() : "" %></textarea>
-                    </div>
-
-                    <div class="form-group full-width">
-                        <label for="observacionesRecepcion">Observaciones de Recepción:</label>
-                        <textarea name="observacionesRecepcion" id="observacionesRecepcion"><%= editando ? orden.getObservacionesRecepcion() : "" %></textarea>
-                    </div>
-                </div>
-
-                <div class="detalles-section">
-                    <div class="detalles-header">
-                        <h3>Detalles de Trabajo</h3>
-                        <button type="button" class="add-detalle-btn" onclick="addDetalle()"
-                                <%= !puedeEditar ? "disabled" : "" %>>
-                            <i class="fas fa-plus"></i> Agregar Detalle
-                        </button>
-                    </div>
-                    <div id="detallesContainer">
-                        <% if (editando && orden.getDetalles() != null) {
-                            for (int i = 0; i < orden.getDetalles().size(); i++) {
-                                DetalleOrden detalle = orden.getDetalles().get(i);
-                        %>
-                        <div class="detalle-item">
-                            <% if (puedeEditar) { %>
-                            <button type="button" class="remove-detalle-btn" onclick="removeDetalle(this)" title="Eliminar detalle">×</button>
-                            <% } %>
-                            <div class="detalle-grid">
-                                <div class="form-group">
-                                    <label>Tipo:</label>
-                                    <select name="tipoDetalle" required <%= !puedeEditar ? "disabled" : "" %>>
-                                        <option value="1" <%= detalle.getTipoDetalle().getId() == 1 ? "selected" : "" %>>Repuesto</option>
-                                        <option value="2" <%= detalle.getTipoDetalle().getId() == 2 ? "selected" : "" %>>Servicio</option>
-                                    </select>
-                                </div>
-                                <div class="form-group">
-                                    <label>Cantidad:</label>
-                                    <input type="number" name="cantidad" min="1" value="<%= detalle.getCantidad() %>"
-                                           required onchange="calculateTotal()" <%= !puedeEditar ? "readonly" : "" %>/>
-                                </div>
-                                <div class="form-group">
-                                    <label>Precio Unitario:</label>
-                                    <input type="number" name="precio" min="0" step="0.01" value="<%= detalle.getPrecio() %>"
-                                           required onchange="calculateTotal()" <%= !puedeEditar ? "readonly" : "" %>/>
-                                </div>
-                                <div class="form-group">
-                                    <label>Costo Mano de Obra:</label>
-                                    <input type="number" name="costoManoObra" min="0" step="0.01" value="<%= detalle.getCostoManoObra() %>"
-                                           onchange="calculateTotal()" <%= !puedeEditar ? "readonly" : "" %>/>
-                                </div>
-                                <div class="form-group">
-                                    <label>Nombre/Descripción:</label>
-                                    <input type="text" name="nombreRepuesto" value="<%= detalle.getNombreRepuesto() %>"
-                                           required <%= !puedeEditar ? "readonly" : "" %>/>
-                                </div>
-                                <div class="form-group">
-                                    <label>Observaciones:</label>
-                                    <input type="text" name="observaciones" value="<%= detalle.getObservaciones() %>"
-                                           <%= !puedeEditar ? "readonly" : "" %>/>
-                                </div>
-                                <div class="form-group">
-                                    <label style="display: flex; align-items: center; gap: 5px;">
-                                        <input type="checkbox" name="repuestoPedido"
-                                               <%= detalle.isRepuestoPedido() ? "checked" : "" %>
-                                               <%= !puedeEditar ? "disabled" : "" %>/>
-                                        Repuesto Pedido
-                                    </label>
-                                </div>
-                            </div>
-                        </div>
-                        <% }
-                        } %>
-                    </div>
-                </div>
-
-                <div class="totales">
-                    <h4>Resumen de Costos</h4>
-                    <div class="total-row">
-                        <span>Total Repuestos:</span>
-                        <span id="totalRepuestos">₡0.00</span>
-                    </div>
-                    <div class="total-row">
-                        <span>Total Servicios:</span>
-                        <span id="totalServicios">₡0.00</span>
-                    </div>
-                    <div class="total-row">
-                        <span>Total Mano de Obra:</span>
-                        <span id="totalManoObra">₡0.00</span>
-                    </div>
-                    <div class="total-row total-final">
-                        <span>TOTAL GENERAL:</span>
-                        <span id="totalGeneral">₡0.00</span>
-                    </div>
-                </div>
-
-                <input type="submit" value="Guardar Orden" class="submit-btn"/>
-            </form>
-
-            <a class="back-link" href="OrdenDeTrabajoServlet">← Volver a la lista</a>
-        </div>
-
-        <script>
-        function validarEstadoOrden() {
-            <% if (editando) { %>
-            const puedeModificar = <%= puedeEditar %>;
-            if (!puedeModificar) {
-                alert('No se pueden agregar repuestos/servicios. La orden está en estado: <%= orden.getEstado().getDescripcion() %>');
-                return false;
-            }
-            <% } %>
-            return true;
+<%@ page import="cr.ac.ucr.servicarpro.proyecto2.progra2.domain.*" %>
+<%@ page import="java.util.List" %>
+<%@ page import="java.time.format.DateTimeFormatter" %>
+<%
+    OrdenDeTrabajo orden = (OrdenDeTrabajo) request.getAttribute("orden");
+    List<Vehiculo> vehiculos = (List<Vehiculo>) request.getAttribute("vehiculos");
+    List<Cliente> clientes = (List<Cliente>) request.getAttribute("clientes");
+    List<Repuesto> repuestos = (List<Repuesto>) request.getAttribute("repuestos");
+    List<Servicio> servicios = (List<Servicio>) request.getAttribute("servicios");
+    String error = (String) request.getAttribute("error");
+    boolean esNuevo = orden == null || orden.getIdOrden() == 0;
+%>
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title><%= esNuevo ? "Nueva" : "Editar" %> Orden de Trabajo</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Roboto', sans-serif;
+            background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
+            color: #f1f1f1;
+            padding: 20px;
+            margin: 0;
         }
-
-        function addDetalle() {
-            if (!validarEstadoOrden()) {
-                return;
-            }
-
-            const container = document.getElementById('detallesContainer');
-            const detalleDiv = document.createElement('div');
-            detalleDiv.className = 'detalle-item';
-            detalleDiv.innerHTML = `
-                <button type="button" class="remove-detalle-btn" onclick="removeDetalle(this)" title="Eliminar detalle">×</button>
-                <div class="detalle-grid">
-                    <div class="form-group">
-                        <label>Tipo:</label>
-                        <select name="tipoDetalle" required>
-                            <option value="">Seleccione</option>
-                            <option value="1">Repuesto</option>
-                            <option value="2">Servicio</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label>Cantidad:</label>
-                        <input type="number" name="cantidad" min="1" value="1" required onchange="calculateTotal()"/>
-                    </div>
-                    <div class="form-group">
-                        <label>Precio Unitario:</label>
-                        <input type="number" name="precio" min="0" step="0.01" value="0" required onchange="calculateTotal()"/>
-                    </div>
-                    <div class="form-group">
-                        <label>Costo Mano de Obra:</label>
-                        <input type="number" name="costoManoObra" min="0" step="0.01" value="0" onchange="calculateTotal()"/>
-                    </div>
-                    <div class="form-group">
-                        <label>Nombre/Descripción:</label>
-                        <input type="text" name="nombreRepuesto" required/>
-                    </div>
-                    <div class="form-group">
-                        <label>Observaciones:</label>
-                        <input type="text" name="observaciones"/>
-                    </div>
-                    <div class="form-group">
-                        <label style="display: flex; align-items: center; gap: 5px;">
-                            <input type="checkbox" name="repuestoPedido"/>
-                            Repuesto Pedido
-                        </label>
-                    </div>
-                </div>
-            `;
-            container.appendChild(detalleDiv);
-            calculateTotal();
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: #2a2a2a;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            border: 1px solid #444;
         }
-
-        function removeDetalle(button) {
-            if (!validarEstadoOrden()) {
-                return;
-            }
-            button.closest('.detalle-item').remove();
-            calculateTotal();
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            border-bottom: 2px solid #ff3c00;
+            padding-bottom: 15px;
         }
-
-        function calculateTotal() {
-            let totalRepuestos = 0;
-            let totalServicios = 0;
-            let totalManoObra = 0;
-
-            const detalles = document.querySelectorAll('.detalle-item');
-            detalles.forEach(detalle => {
-                const tipo = detalle.querySelector('select[name="tipoDetalle"]').value;
-                const cantidad = parseFloat(detalle.querySelector('input[name="cantidad"]').value) || 0;
-                const precio = parseFloat(detalle.querySelector('input[name="precio"]').value) || 0;
-                const costoManoObra = parseFloat(detalle.querySelector('input[name="costoManoObra"]').value) || 0;
-
-                const subtotal = cantidad * precio;
-                if (tipo === '1') { // Repuesto
-                    totalRepuestos += subtotal;
-                } else if (tipo === '2') { // Servicio
-                    totalServicios += subtotal;
-                }
-                totalManoObra += costoManoObra;
-            });
-
-            document.getElementById('totalRepuestos').textContent = '₡' + totalRepuestos.toLocaleString('es-CR', {minimumFractionDigits: 2});
-            document.getElementById('totalServicios').textContent = '₡' + totalServicios.toLocaleString('es-CR', {minimumFractionDigits: 2});
-            document.getElementById('totalManoObra').textContent = '₡' + totalManoObra.toLocaleString('es-CR', {minimumFractionDigits: 2});
-            document.getElementById('totalGeneral').textContent = '₡' + (totalRepuestos + totalServicios + totalManoObra).toLocaleString('es-CR', {minimumFractionDigits: 2});
+        .header h1 {
+            color: #ff3c00;
+            margin: 0;
+            font-size: 28px;
+            font-weight: 700;
         }
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        .form-group.full-width {
+            grid-column: 1 / -1;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: #ccc;
+            font-size: 14px;
+        }
+        .form-group input, .form-group select, .form-group textarea {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #555;
+            border-radius: 8px;
+            background-color: #3a3a3a;
+            color: #f1f1f1;
+            box-sizing: border-box;
+            font-size: 14px;
+        }
+        .form-group input:focus, .form-group select:focus, .form-group textarea:focus {
+            outline: none;
+            border-color: #ff3c00;
+            box-shadow: 0 0 0 2px rgba(255, 60, 0, 0.2);
+        }
+        .detalles-section {
+            margin-top: 30px;
+            background: #333;
+            padding: 20px;
+            border-radius: 10px;
+        }
+        .detalles-section h3 {
+            color: #ff3c00;
+            margin: 0 0 20px 0;
+            font-size: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .btn-add-detail {
+            background: #28a745;
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: bold;
+        }
+        .btn-add-detail:hover {
+            background: #218838;
+        }
+        .detalle-form {
+            background: #444;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            border: 1px solid #555;
+        }
+        .detalle-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr 1fr;
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+        .detalle-row-2 {
+            display: grid;
+            grid-template-columns: 2fr 2fr 1fr;
+            gap: 15px;
+            align-items: end;
+        }
+        .checkbox-group {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding-top: 25px;
+        }
+        .checkbox-group input[type="checkbox"] {
+            width: auto;
+        }
+        .detalles-lista {
+            margin-top: 20px;
+        }
+        .detalle-item {
+            background: #3a3a3a;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            border-left: 4px solid #ff3c00;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .detalle-content {
+            flex-grow: 1;
+        }
+        .detalle-content h4 {
+            margin: 0 0 8px 0;
+            color: #fff;
+        }
+        .detalle-content p {
+            margin: 0;
+            color: #ccc;
+            font-size: 13px;
+        }
+        .btn-remove {
+            background: #dc3545;
+            color: white;
+            border: none;
+            padding: 6px 10px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .btn-remove:hover {
+            background: #c82333;
+        }
+        .resumen-costos {
+            background: #333;
+            padding: 20px;
+            border-radius: 10px;
+            margin-top: 20px;
+        }
+        .resumen-costos h3 {
+            color: #ff3c00;
+            margin: 0 0 15px 0;
+        }
+        .costo-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            padding: 5px 0;
+        }
+        .total-final {
+            border-top: 2px solid #ff3c00;
+            margin-top: 15px;
+            padding-top: 15px;
+            font-size: 18px;
+            font-weight: bold;
+            color: #28a745;
+        }
+        .btn-group {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            margin-top: 30px;
+        }
+        .btn {
+            padding: 12px 30px;
+            border: none;
+            border-radius: 8px;
+            font-weight: bold;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-block;
+            text-align: center;
+            font-size: 14px;
+        }
+        .btn-primary {
+            background: #ff3c00;
+            color: white;
+        }
+        .btn-primary:hover {
+            background: #e03a00;
+        }
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+        .btn-secondary:hover {
+            background: #5a6268;
+        }
+        .error {
+            background: #e74c3c;
+            color: white;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        .home-button {
+            display: inline-block;
+            background: #ff3c00;
+            color: white;
+            text-decoration: none;
+            padding: 10px 16px;
+            border-radius: 6px;
+            font-weight: bold;
+            margin-bottom: 20px;
+        }
+        .tipo-badge {
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: bold;
+        }
+        .tipo-repuesto {
+            background: #3498db;
+            color: white;
+        }
+        .tipo-servicio {
+            background: #27ae60;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+<a href="inicio.jsp" class="home-button"><i class="fas fa-home"></i> Inicio</a>
 
-        // Agregar un detalle inicial si es una nueva orden
-        <% if (!editando) { %>
-        addDetalle();
+<div class="container">
+    <div class="header">
+        <h1><%= esNuevo ? "Nueva" : "Editar" %> Orden de Trabajo</h1>
+        <% if (!esNuevo) { %>
+        <p>Orden #<%= orden.getIdOrden() %></p>
+        <% } %>
+    </div>
+
+    <% if (error != null) { %>
+    <div class="error">
+        <i class="fas fa-exclamation-circle"></i> <%= error %>
+    </div>
+    <% } %>
+
+    <form method="post" action="OrdenDeTrabajoServlet" id="ordenForm">
+        <% if (!esNuevo) { %>
+        <input type="hidden" name="id" value="<%= orden.getIdOrden() %>">
         <% } %>
 
-        // Calcular total inicial
-        calculateTotal();
+        <div class="form-row">
+            <div class="form-group">
+                <label for="numeroPlaca">Vehículo (Placa):</label>
+                <select id="numeroPlaca" name="numeroPlaca" required <%= esNuevo ? "" : "disabled" %>>
+                    <option value="">Seleccione un vehículo</option>
+                    <% if (vehiculos != null) {
+                        for (Vehiculo vehiculo : vehiculos) { %>
+                    <option value="<%= vehiculo.getNumeroPlaca() %>"
+                            <%= (orden != null && orden.getNumeroPlaca() != null && orden.getNumeroPlaca().equals(vehiculo.getNumeroPlaca())) ? "selected" : "" %>>
+                        <%= vehiculo.getNumeroPlaca() %> - <%= vehiculo.getMarca() %> <%= vehiculo.getAnio() %>
+                    </option>
+                    <% } } %>
+                </select>
+                <% if (!esNuevo) { %>
+                <input type="hidden" name="numeroPlaca" value="<%= orden.getNumeroPlaca() %>">
+                <% } %>
+            </div>
 
-        // Validación de formulario
-        document.getElementById('ordenForm').onsubmit = function(e) {
-            const detalles = document.querySelectorAll('.detalle-item');
-            if (detalles.length === 0) {
-                alert('Debe agregar al menos un detalle a la orden de trabajo.');
-                e.preventDefault();
-                return false;
+            <div class="form-group">
+                <label for="idCliente">Cliente:</label>
+                <select id="idCliente" name="idCliente" required <%= esNuevo ? "" : "disabled" %>>
+                    <option value="">Seleccione un cliente</option>
+                    <% if (clientes != null) {
+                        for (Cliente cliente : clientes) { %>
+                    <option value="<%= cliente.getId() %>"
+                            <%= (orden != null && orden.getIdCliente() == cliente.getId()) ? "selected" : "" %>>
+                        <%= cliente.getNombre() %> <%= cliente.getPrimerApellido() %>
+                    </option>
+                    <% } } %>
+                </select>
+                <% if (!esNuevo) { %>
+                <input type="hidden" name="idCliente" value="<%= orden.getIdCliente() %>">
+                <% } %>
+            </div>
+        </div>
+
+        <div class="form-group full-width">
+            <label for="descripcionSolicitud">Descripción de la Solicitud:</label>
+            <textarea id="descripcionSolicitud" name="descripcionSolicitud" rows="4" required><%= (orden != null && orden.getDescripcionSolicitud() != null) ? orden.getDescripcionSolicitud() : "" %></textarea>
+        </div>
+
+        <div class="form-group full-width">
+            <label for="observacionesRecepcion">Observaciones de Recepción:</label>
+            <textarea id="observacionesRecepcion" name="observacionesRecepcion" rows="3"><%= (orden != null && orden.getObservacionesRecepcion() != null) ? orden.getObservacionesRecepcion() : "" %></textarea>
+        </div>
+
+        <div class="detalles-section">
+            <h3>
+                Detalles de Trabajo
+                <button type="button" class="btn-add-detail" onclick="mostrarFormularioDetalle()">
+                    + Agregar Detalle
+                </button>
+            </h3>
+
+            <div id="formularioDetalle" class="detalle-form" style="display: none;">
+                <div class="detalle-row">
+                    <div class="form-group">
+                        <label for="tipoDetalle">Tipo:</label>
+                        <select id="tipoDetalle" onchange="actualizarOpciones()">
+                            <option value="">Seleccione</option>
+                            <option value="repuesto">Repuesto</option>
+                            <option value="servicio">Servicio</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="cantidad">Cantidad:</label>
+                        <input type="number" id="cantidad" min="1" value="1">
+                    </div>
+                    <div class="form-group">
+                        <label for="precioUnitario">Precio Unitario:</label>
+                        <input type="number" id="precioUnitario" step="0.01" readonly>
+                    </div>
+                    <div class="form-group">
+                        <label for="costoManoObra">Costo Mano de Obra:</label>
+                        <input type="number" id="costoManoObra" step="0.01" readonly>
+                    </div>
+                </div>
+                <div class="detalle-row-2">
+                    <div class="form-group">
+                        <label for="itemSelect">Nombre/Descripción:</label>
+                        <select id="itemSelect" onchange="actualizarPrecio()">
+                            <option value="">Primero seleccione el tipo</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="observaciones">Observaciones:</label>
+                        <input type="text" id="observaciones" placeholder="Observaciones adicionales">
+                    </div>
+                    <div class="checkbox-group">
+                        <input type="checkbox" id="repuestoPedido" disabled>
+                        <label for="repuestoPedido">Repuesto Pedido</label>
+                    </div>
+                </div>
+                <div style="text-align: center; margin-top: 15px;">
+                    <button type="button" class="btn btn-primary" onclick="agregarDetalle()">
+                        Agregar Detalle
+                    </button>
+                    <button type="button" class="btn btn-secondary" onclick="cancelarDetalle()">
+                        Cancelar
+                    </button>
+                </div>
+            </div>
+
+            <div id="detallesLista" class="detalles-lista">
+                <!-- Los detalles se agregarán aquí dinámicamente -->
+            </div>
+        </div>
+
+        <div class="resumen-costos">
+            <h3>Resumen de Costos</h3>
+            <div class="costo-row">
+                <span>Total Repuestos:</span>
+                <span id="totalRepuestos">₡0,00</span>
+            </div>
+            <div class="costo-row">
+                <span>Total Servicios:</span>
+                <span id="totalServicios">₡0,00</span>
+            </div>
+            <div class="costo-row">
+                <span>Total Mano de Obra:</span>
+                <span id="totalManoObra">₡0,00</span>
+            </div>
+            <div class="costo-row total-final">
+                <span>TOTAL GENERAL:</span>
+                <span id="totalGeneral">₡0,00</span>
+            </div>
+        </div>
+
+        <div class="btn-group">
+            <button type="submit" class="btn btn-primary">
+                <i class="fas fa-save"></i> <%= esNuevo ? "Guardar" : "Actualizar" %> Orden
+            </button>
+            <a href="OrdenDeTrabajoServlet" class="btn btn-secondary">
+                <i class="fas fa-arrow-left"></i> Cancelar
+            </a>
+        </div>
+    </form>
+</div>
+
+<script>
+    const repuestos = [
+        <% if (repuestos != null) {
+            for (int i = 0; i < repuestos.size(); i++) {
+                Repuesto r = repuestos.get(i); %>
+        {
+            id: <%= r.getId() %>,
+            nombre: "<%= r.getNombre() %>",
+            precio: <%= r.getPrecio() %>,
+            pedido: <%= r.isPedido() %>,
+            cantidad: <%= r.getCantidadDisponible() %>
+        }<%= i < repuestos.size() - 1 ? "," : "" %>
+        <% } } %>
+    ];
+
+    const servicios = [
+        <% if (servicios != null) {
+            for (int i = 0; i < servicios.size(); i++) {
+                Servicio s = servicios.get(i); %>
+        {
+            id: <%= s.getId() %>,
+            nombre: "<%= s.getNombre() %>",
+            precio: <%= s.getPrecio() %>,
+            manoObra: <%= s.getCostoManoObra() %>
+        }<%= i < servicios.size() - 1 ? "," : "" %>
+        <% } } %>
+    ];
+
+    let detalleCounter = 0;
+
+    function mostrarFormularioDetalle() {
+        document.getElementById('formularioDetalle').style.display = 'block';
+    }
+
+    function cancelarDetalle() {
+        document.getElementById('formularioDetalle').style.display = 'none';
+        limpiarFormulario();
+    }
+
+    function actualizarOpciones() {
+        const tipo = document.getElementById('tipoDetalle').value;
+        const itemSelect = document.getElementById('itemSelect');
+        const repuestoPedidoCheckbox = document.getElementById('repuestoPedido');
+
+        itemSelect.innerHTML = '<option value="">Seleccione un item</option>';
+        document.getElementById('precioUnitario').value = '';
+        document.getElementById('costoManoObra').value = '';
+        repuestoPedidoCheckbox.checked = false;
+
+        if (tipo === 'repuesto') {
+            repuestos.forEach(repuesto => {
+                itemSelect.innerHTML += '<option value="' + repuesto.id + '" data-precio="' + repuesto.precio + '" data-pedido="' + repuesto.pedido + '">' + repuesto.nombre + '</option>';
+            });
+            repuestoPedidoCheckbox.disabled = false;
+        } else if (tipo === 'servicio') {
+            servicios.forEach(servicio => {
+                itemSelect.innerHTML += '<option value="' + servicio.id + '" data-precio="' + servicio.precio + '" data-mano-obra="' + servicio.manoObra + '">' + servicio.nombre + '</option>';
+            });
+            repuestoPedidoCheckbox.disabled = true;
+            repuestoPedidoCheckbox.checked = false;
+        } else {
+            repuestoPedidoCheckbox.disabled = true;
+        }
+    }
+
+    function actualizarPrecio() {
+        const itemSelect = document.getElementById('itemSelect');
+        const selectedOption = itemSelect.options[itemSelect.selectedIndex];
+
+        if (selectedOption.value) {
+            document.getElementById('precioUnitario').value = selectedOption.getAttribute('data-precio') || 0;
+            document.getElementById('costoManoObra').value = selectedOption.getAttribute('data-mano-obra') || 0;
+
+            const repuestoPedidoCheckbox = document.getElementById('repuestoPedido');
+            if (selectedOption.getAttribute('data-pedido') === 'true') {
+                repuestoPedidoCheckbox.checked = true;
+            } else {
+                repuestoPedidoCheckbox.checked = false;
             }
-            return true;
-        };
-        </script>
-        </body>
-        </html>
+        }
+    }
+
+    function agregarDetalle() {
+        const tipo = document.getElementById('tipoDetalle').value;
+        const itemSelect = document.getElementById('itemSelect');
+        const cantidad = document.getElementById('cantidad').value;
+        const precio = document.getElementById('precioUnitario').value;
+        const manoObra = document.getElementById('costoManoObra').value;
+        const observaciones = document.getElementById('observaciones').value;
+        const repuestoPedido = document.getElementById('repuestoPedido').checked;
+
+        if (!tipo || !itemSelect.value || !cantidad || !precio) {
+            alert('Por favor complete todos los campos requeridos');
+            return;
+        }
+
+        const nombreItem = itemSelect.options[itemSelect.selectedIndex].text;
+        const tipoTexto = tipo === 'repuesto' ? 'Repuesto' : 'Servicio';
+        const subtotal = parseFloat(cantidad) * parseFloat(precio);
+
+        const detalleHTML =
+            '<div class="detalle-item" id="detalle-' + detalleCounter + '">' +
+            '<div class="detalle-content">' +
+            '<h4>' + nombreItem + ' <span class="tipo-badge tipo-' + tipo + '">' + tipoTexto + '</span></h4>' +
+            '<p><strong>Cantidad:</strong> ' + cantidad + ' | ' +
+            '<strong>Precio:</strong> ₡' + parseFloat(precio).toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',') + ' | ' +
+            '<strong>Subtotal:</strong> ₡' + subtotal.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',') + '</p>' +
+            (parseFloat(manoObra) > 0 ? '<p><strong>Mano de Obra:</strong> ₡' + parseFloat(manoObra).toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',') + '</p>' : '') +
+            (observaciones ? '<p><strong>Observaciones:</strong> ' + observaciones + '</p>' : '') +
+            (repuestoPedido ? '<p><strong>Estado:</strong> Repuesto Pedido</p>' : '') +
+            '</div>' +
+            '<button type="button" class="btn-remove" onclick="eliminarDetalle(' + detalleCounter + ')">' +
+            '<i class="fas fa-trash"></i>' +
+            '</button>' +
+            '<input type="hidden" name="tipoDetalle" value="' + tipo + '">' +
+            '<input type="hidden" name="itemId" value="' + itemSelect.value + '">' +
+            '<input type="hidden" name="cantidad" value="' + cantidad + '">' +
+            '<input type="hidden" name="observacionesDetalle" value="' + observaciones + '">' +
+            '</div>';
+
+        document.getElementById('detallesLista').innerHTML += detalleHTML;
+        detalleCounter++;
+
+        cancelarDetalle();
+        actualizarResumen();
+    }
+
+    function eliminarDetalle(index) {
+        if (confirm('¿Está seguro de eliminar este detalle?')) {
+            document.getElementById('detalle-' + index).remove();
+            actualizarResumen();
+        }
+    }
+
+    function limpiarFormulario() {
+        document.getElementById('tipoDetalle').value = '';
+        document.getElementById('itemSelect').innerHTML = '<option value="">Primero seleccione el tipo</option>';
+        document.getElementById('cantidad').value = '1';
+        document.getElementById('precioUnitario').value = '';
+        document.getElementById('costoManoObra').value = '';
+        document.getElementById('observaciones').value = '';
+        document.getElementById('repuestoPedido').checked = false;
+        document.getElementById('repuestoPedido').disabled = true;
+    }
+
+    function actualizarResumen() {
+        let totalRepuestos = 0;
+        let totalServicios = 0;
+        let totalManoObra = 0;
+
+        const detalles = document.querySelectorAll('.detalle-item');
+
+        detalles.forEach(detalle => {
+            const tipo = detalle.querySelector('input[name="tipoDetalle"]').value;
+            const cantidad = parseFloat(detalle.querySelector('input[name="cantidad"]').value);
+
+            const itemId = detalle.querySelector('input[name="itemId"]').value;
+
+            if (tipo === 'repuesto') {
+                const repuesto = repuestos.find(r => r.id == itemId);
+                if (repuesto) {
+                    totalRepuestos += cantidad * repuesto.precio;
+                }
+            } else if (tipo === 'servicio') {
+                const servicio = servicios.find(s => s.id == itemId);
+                if (servicio) {
+                    totalServicios += cantidad * servicio.precio;
+                    totalManoObra += servicio.manoObra;
+                }
+            }
+        });
+
+        document.getElementById('totalRepuestos').textContent = '₡' + totalRepuestos.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+        document.getElementById('totalServicios').textContent = '₡' + totalServicios.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+        document.getElementById('totalManoObra').textContent = '₡' + totalManoObra.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+        document.getElementById('totalGeneral').textContent = '₡' + (totalRepuestos + totalServicios + totalManoObra).toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+    }
+
+    // Cargar detalles existentes si es edición
+    <% if (!esNuevo && orden != null && orden.getDetalles() != null) {
+        for (DetalleOrden detalle : orden.getDetalles()) { %>
+    // Código para cargar detalles existentes aquí si es necesario
+    <% } } %>
+</script>
+</body>
+</html>

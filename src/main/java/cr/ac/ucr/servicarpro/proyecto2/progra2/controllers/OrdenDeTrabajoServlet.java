@@ -1,11 +1,17 @@
 package cr.ac.ucr.servicarpro.proyecto2.progra2.controllers;
 
+import cr.ac.ucr.servicarpro.proyecto2.progra2.data.dao.RepuestoDAO;
+import cr.ac.ucr.servicarpro.proyecto2.progra2.data.dao.ServicioDAO;
+import cr.ac.ucr.servicarpro.proyecto2.progra2.data.dao.VehiculoDAO;
+import cr.ac.ucr.servicarpro.proyecto2.progra2.data.dao.ClienteDAO;
 import cr.ac.ucr.servicarpro.proyecto2.progra2.domain.*;
-import cr.ac.ucr.servicarpro.proyecto2.progra2.servicies.*;
+import cr.ac.ucr.servicarpro.proyecto2.progra2.servicies.OrdenTrabajoService;
 
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
-import jakarta.servlet.http.*;
+import jakarta.servlet.http.HttpServlet;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 
 import java.io.IOException;
 import java.time.LocalDate;
@@ -16,17 +22,21 @@ import java.util.List;
 public class OrdenDeTrabajoServlet extends HttpServlet {
 
     private OrdenTrabajoService ordenService;
-    private VehiculoService vehiculoService;
-    private ClienteService clienteService;
+    private RepuestoDAO repuestoDAO;
+    private ServicioDAO servicioDAO;
+    private VehiculoDAO vehiculoDAO;
+    private ClienteDAO clienteDAO;
 
     @Override
     public void init() throws ServletException {
         try {
-            this.ordenService = new OrdenTrabajoService();
-            this.vehiculoService = new VehiculoService();
-            this.clienteService = new ClienteService();
+            ordenService = new OrdenTrabajoService();
+            repuestoDAO = new RepuestoDAO();
+            servicioDAO = new ServicioDAO();
+            vehiculoDAO = new VehiculoDAO();
+            clienteDAO = new ClienteDAO();
         } catch (Exception e) {
-            throw new ServletException("Error inicializando servicios", e);
+            throw new ServletException("Error inicializando DAOs", e);
         }
     }
 
@@ -34,183 +44,49 @@ public class OrdenDeTrabajoServlet extends HttpServlet {
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
 
-        String action = request.getParameter("action");
+        String action = request.getParameter("action") != null ? request.getParameter("action") : "list";
 
         try {
-            if ("nuevo".equals(action)) {
-                mostrarFormularioNuevo(request, response);
-            } else if ("editar".equals(action)) {
-                mostrarFormularioEditar(request, response);
-            } else if ("detalle".equals(action)) {
-                mostrarDetalle(request, response);
-            } else if ("cambiarEstado".equals(action)) {
-                cambiarEstado(request, response);
-            } else if ("eliminar".equals(action)) {
-                eliminarOrden(request, response);
-            } else {
-                listarOrdenes(request, response);
+            switch (action) {
+                case "nuevo":
+                    mostrarFormularioNuevo(request, response);
+                    break;
+                case "editar":
+                    mostrarFormularioEditar(request, response);
+                    break;
+                case "detalle":
+                    mostrarDetalle(request, response);
+                    break;
+                case "cambiarEstado":
+                    cambiarEstado(request, response);
+                    break;
+                case "eliminar":
+                    eliminarOrden(request, response);
+                    break;
+                default:
+                    listarOrdenes(request, response);
+                    break;
             }
         } catch (Exception e) {
-            request.setAttribute("error", "Error procesando solicitud: " + e.getMessage());
-            listarOrdenes(request, response);
+            throw new ServletException("Error procesando acción: " + action, e);
         }
     }
 
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-
         try {
-            String numeroPlaca = request.getParameter("numeroPlaca");
-            int idCliente = Integer.parseInt(request.getParameter("idCliente"));
-            String descripcionSolicitud = request.getParameter("descripcionSolicitud");
-            String observacionesRecepcion = request.getParameter("observacionesRecepcion");
-            String fechaDevolucionStr = request.getParameter("fechaDevolucion");
-            String idOrdenStr = request.getParameter("idOrden");
+            String idParam = request.getParameter("id");
+            boolean esNueva = idParam == null || idParam.trim().isEmpty();
 
-            // Si es una edición, validar estado antes de procesar detalles
-            if (idOrdenStr != null && !idOrdenStr.isEmpty()) {
-                int idOrden = Integer.parseInt(idOrdenStr);
-                OrdenDeTrabajo ordenExistente = ordenService.buscarPorId(idOrden);
-
-                if (ordenExistente != null && !puedeModificarDetalles(ordenExistente)) {
-                    request.setAttribute("error",
-                            "No se pueden agregar/modificar repuestos/servicios. Estado actual: " +
-                                    ordenExistente.getEstado().getDescripcion());
-                    request.setAttribute("orden", ordenExistente);
-                    cargarDatosFormulario(request);
-                    request.getRequestDispatcher("ordenes/formulario.jsp").forward(request, response);
-                    return;
-                }
-            }
-
-            // Procesar detalles
-            List<DetalleOrden> detalles = procesarDetalles(request);
-
-            // Crear o actualizar orden
-            OrdenDeTrabajo orden = new OrdenDeTrabajo();
-            orden.setNumeroPlaca(numeroPlaca);
-            orden.setIdCliente(idCliente);
-            orden.setDescripcionSolicitud(descripcionSolicitud);
-            orden.setObservacionesRecepcion(observacionesRecepcion);
-            orden.setDetalles(detalles);
-
-            // Agregar fecha de devolución como observación adicional
-            if (fechaDevolucionStr != null && !fechaDevolucionStr.isEmpty()) {
-                LocalDate fechaDevolucion = LocalDate.parse(fechaDevolucionStr);
-                String observacionesCompletas = observacionesRecepcion +
-                        "\nFecha estimada de devolución: " + fechaDevolucion.toString();
-                orden.setObservacionesRecepcion(observacionesCompletas);
-            }
-
-            if (idOrdenStr != null && !idOrdenStr.isEmpty()) {
-                // Actualizar orden existente
-                int idOrden = Integer.parseInt(idOrdenStr);
-                orden.setIdOrden(idOrden);
-                ordenService.actualizarOrden(orden);
+            if (esNueva) {
+                crearOrden(request, response);
             } else {
-                // Crear nueva orden
-                ordenService.crearOrden(orden);
+                actualizarOrden(request, response);
             }
-
-            response.sendRedirect("OrdenDeTrabajoServlet");
-
         } catch (Exception e) {
-            request.setAttribute("error", "Error al procesar la orden: " + e.getMessage());
-            cargarDatosFormulario(request);
-            request.getRequestDispatcher("ordenes/formulario.jsp").forward(request, response);
+            throw new ServletException("Error guardando orden", e);
         }
-    }
-
-    /**
-     * Valida si se pueden modificar los detalles de una orden según su estado
-     */
-    private boolean puedeModificarDetalles(OrdenDeTrabajo orden) {
-        // Estados que permiten modificación:
-        // 1: Recibida/Diagnóstico, 2: En reparación, 3: En espera de repuestos
-        return orden.getEstado().getId() < 4;
-    }
-
-    /**
-     * Valida si una orden está completada (estado >= 4)
-     */
-    private boolean estaOrdenCompletada(OrdenDeTrabajo orden) {
-        // Estados completados: 4: Entregado, 5: Cancelado
-        return orden.getEstado().getId() >= 4;
-    }
-
-    private List<DetalleOrden> procesarDetalles(HttpServletRequest request) {
-        List<DetalleOrden> detalles = new ArrayList<>();
-
-        String[] tiposDetalle = request.getParameterValues("tipoDetalle");
-        String[] cantidades = request.getParameterValues("cantidad");
-        String[] observaciones = request.getParameterValues("observaciones");
-        String[] precios = request.getParameterValues("precio");
-        String[] nombresRepuesto = request.getParameterValues("nombreRepuesto");
-        String[] costosManObra = request.getParameterValues("costoManoObra");
-        String[] repuestosPedido = request.getParameterValues("repuestoPedido");
-
-        if (tiposDetalle != null) {
-            for (int i = 0; i < tiposDetalle.length; i++) {
-                if (cantidades[i] != null && !cantidades[i].isEmpty()) {
-                    DetalleOrden detalle = new DetalleOrden();
-                    detalle.setCantidad(Integer.parseInt(cantidades[i]));
-                    detalle.setObservaciones(observaciones != null && i < observaciones.length ? observaciones[i] : "");
-                    detalle.setPrecio(Double.parseDouble(precios[i]));
-                    detalle.setNombreRepuesto(nombresRepuesto[i]);
-                    detalle.setCostoManoObra(costosManObra != null && i < costosManObra.length && !costosManObra[i].isEmpty() ?
-                            Double.parseDouble(costosManObra[i]) : 0.0);
-
-                    // Verificar si el repuesto está pedido
-                    boolean pedido = false;
-                    if (repuestosPedido != null) {
-                        for (String rp : repuestosPedido) {
-                            if (("on".equals(rp) || "true".equals(rp)) && repuestosPedido.length > i) {
-                                pedido = true;
-                                break;
-                            }
-                        }
-                    }
-                    detalle.setRepuestoPedido(pedido);
-
-                    // Configurar tipo de detalle
-                    TipoDetalle tipo = new TipoDetalle();
-                    int tipoId = Integer.parseInt(tiposDetalle[i]);
-                    tipo.setId(tipoId);
-                    tipo.setNombre(tipoId == 1 ? "Repuesto" : "Servicio");
-                    detalle.setTipoDetalle(tipo);
-
-                    // Estado inicial
-                    Estado estado = new Estado(1, "Pendiente");
-                    detalle.setEstado(estado);
-
-                    detalles.add(detalle);
-                }
-            }
-        }
-
-        return detalles;
-    }
-
-    private void listarOrdenes(HttpServletRequest request, HttpServletResponse response)
-            throws ServletException, IOException {
-        String filtro = request.getParameter("filtro");
-        List<OrdenDeTrabajo> ordenes;
-
-        if (filtro != null && !filtro.trim().isEmpty()) {
-            ordenes = ordenService.listarOrdenes().stream()
-                    .filter(o -> String.valueOf(o.getIdOrden()).contains(filtro) ||
-                            o.getNumeroPlaca().toLowerCase().contains(filtro.toLowerCase()) ||
-                            o.getDescripcionSolicitud().toLowerCase().contains(filtro.toLowerCase()) ||
-                            String.valueOf(o.getIdCliente()).contains(filtro))
-                    .toList();
-        } else {
-            ordenes = ordenService.listarOrdenes();
-        }
-
-        request.setAttribute("ordenes", ordenes);
-        request.setAttribute("filtro", filtro);
-        request.getRequestDispatcher("ordenes/lista.jsp").forward(request, response);
     }
 
     private void mostrarFormularioNuevo(HttpServletRequest request, HttpServletResponse response)
@@ -221,110 +97,278 @@ public class OrdenDeTrabajoServlet extends HttpServlet {
 
     private void mostrarFormularioEditar(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        int idOrden = Integer.parseInt(request.getParameter("id"));
-        OrdenDeTrabajo orden = ordenService.buscarPorId(idOrden);
+        int id = Integer.parseInt(request.getParameter("id"));
+        OrdenDeTrabajo orden = ordenService.buscarPorId(id);
 
         if (orden == null) {
-            request.setAttribute("error", "Orden no encontrada");
-            listarOrdenes(request, response);
+            response.sendError(HttpServletResponse.SC_NOT_FOUND, "Orden no encontrada");
             return;
         }
 
-        // Verificar si la orden está completada
-        if (estaOrdenCompletada(orden)) {
-            request.setAttribute("error",
-                    "No se puede editar una orden que ya fue " + orden.getEstado().getDescripcion().toLowerCase());
-            mostrarDetalle(request, response);
-            return;
-        }
-
-        request.setAttribute("orden", orden);
-        request.setAttribute("puedeModificarDetalles", puedeModificarDetalles(orden));
         cargarDatosFormulario(request);
+        request.setAttribute("orden", orden);
         request.getRequestDispatcher("ordenes/formulario.jsp").forward(request, response);
     }
 
-    private void mostrarDetalle(HttpServletRequest request, HttpServletResponse response)
-            throws ServletException, IOException {
-        int idOrden = Integer.parseInt(request.getParameter("id"));
-        OrdenDeTrabajo orden = ordenService.buscarPorId(idOrden);
-
-        if (orden == null) {
-            request.setAttribute("error", "Orden no encontrada");
-            listarOrdenes(request, response);
-            return;
-        }
-
-        request.setAttribute("orden", orden);
-        request.setAttribute("puedeModificarDetalles", puedeModificarDetalles(orden));
-        request.getRequestDispatcher("ordenes/detalle.jsp").forward(request, response);
+    private void cargarDatosFormulario(HttpServletRequest request) {
+        request.setAttribute("vehiculos", vehiculoDAO.findAll());
+        request.setAttribute("clientes", clienteDAO.findAll());
+        request.setAttribute("repuestos", repuestoDAO.findAll());
+        request.setAttribute("servicios", servicioDAO.findAll());
     }
 
-    private void cambiarEstado(HttpServletRequest request, HttpServletResponse response)
+    private void crearOrden(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        int idOrden = Integer.parseInt(request.getParameter("id"));
-        int nuevoEstadoId = Integer.parseInt(request.getParameter("estado"));
 
-        Estado nuevoEstado;
-        switch (nuevoEstadoId) {
-            case 1: nuevoEstado = new Estado(1, "Recibida"); break;
-            case 2: nuevoEstado = new Estado(2, "En reparación"); break;
-            case 3: nuevoEstado = new Estado(3, "En espera de repuestos"); break;
-            case 4: nuevoEstado = new Estado(4, "Entregado"); break;
-            case 5: nuevoEstado = new Estado(5, "Cancelado"); break;
-            default: throw new IllegalArgumentException("Estado no válido");
+        OrdenDeTrabajo orden = construirOrdenDesdeRequest(request);
+
+        try {
+            ordenService.crearOrden(orden);
+            response.sendRedirect("OrdenDeTrabajoServlet");
+        } catch (Exception e) {
+            cargarDatosFormulario(request);
+            request.setAttribute("orden", orden);
+            request.setAttribute("error", "Error creando orden: " + e.getMessage());
+            request.getRequestDispatcher("ordenes/formulario.jsp").forward(request, response);
         }
+    }
 
-        // Si se está cambiando a estado completado (4 o 5), agregar una confirmación
-        if (nuevoEstadoId >= 4) {
-            OrdenDeTrabajo orden = ordenService.buscarPorId(idOrden);
-            if (orden != null) {
-                System.out.println("Orden #" + idOrden + " marcada como " + nuevoEstado.getDescripcion() +
-                        ". Ya no se podrán agregar más repuestos/servicios.");
+    private void actualizarOrden(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+
+        int id = Integer.parseInt(request.getParameter("id"));
+        OrdenDeTrabajo orden = construirOrdenDesdeRequest(request);
+        orden.setIdOrden(id);
+
+        try {
+            ordenService.actualizarOrden(orden);
+            response.sendRedirect("OrdenDeTrabajoServlet");
+        } catch (Exception e) {
+            cargarDatosFormulario(request);
+            request.setAttribute("orden", orden);
+            request.setAttribute("error", "Error actualizando orden: " + e.getMessage());
+            request.getRequestDispatcher("ordenes/formulario.jsp").forward(request, response);
+        }
+    }
+
+    private OrdenDeTrabajo construirOrdenDesdeRequest(HttpServletRequest request) {
+        OrdenDeTrabajo orden = new OrdenDeTrabajo();
+
+        orden.setDescripcionSolicitud(request.getParameter("descripcionSolicitud"));
+        orden.setNumeroPlaca(request.getParameter("numeroPlaca"));
+        orden.setIdCliente(Integer.parseInt(request.getParameter("idCliente")));
+        orden.setObservacionesRecepcion(request.getParameter("observacionesRecepcion"));
+
+        // Procesar detalles
+        List<DetalleOrden> detalles = new ArrayList<>();
+        String[] tiposDetalle = request.getParameterValues("tipoDetalle");
+
+        if (tiposDetalle != null) {
+            for (int i = 0; i < tiposDetalle.length; i++) {
+                String tipoParam = tiposDetalle[i];
+                String itemIdParam = request.getParameterValues("itemId")[i];
+                String cantidadParam = request.getParameterValues("cantidad")[i];
+                String observacionesParam = request.getParameterValues("observacionesDetalle")[i];
+
+                if (itemIdParam != null && !itemIdParam.trim().isEmpty() &&
+                        cantidadParam != null && !cantidadParam.trim().isEmpty()) {
+
+                    DetalleOrden detalle = new DetalleOrden();
+                    detalle.setCantidad(Integer.parseInt(cantidadParam));
+                    detalle.setObservaciones(observacionesParam != null ? observacionesParam : "");
+
+                    if ("repuesto".equals(tipoParam)) {
+                        // Es un repuesto
+                        int repuestoId = Integer.parseInt(itemIdParam);
+                        Repuesto repuesto = repuestoDAO.findById(repuestoId);
+
+                        detalle.setTipoDetalle(new TipoDetalle(1, "Repuesto"));
+                        detalle.setNombreRepuesto(repuesto.getNombre());
+                        detalle.setPrecio(repuesto.getPrecio());
+                        detalle.setRepuestoPedido(repuesto.isPedido());
+                        detalle.setCostoManoObra(0.0);
+
+                    } else if ("servicio".equals(tipoParam)) {
+                        // Es un servicio
+                        int servicioId = Integer.parseInt(itemIdParam);
+                        Servicio servicio = servicioDAO.findById(servicioId);
+
+                        detalle.setTipoDetalle(new TipoDetalle(2, "Servicio"));
+                        detalle.setNombreRepuesto(servicio.getNombre());
+                        detalle.setPrecio(servicio.getPrecio());
+                        detalle.setRepuestoPedido(false);
+                        detalle.setCostoManoObra(servicio.getCostoManoObra());
+                    }
+
+                    detalle.setEstado(new Estado(1, "Pendiente"));
+                    detalles.add(detalle);
+                }
             }
         }
 
-        ordenService.cambiarEstadoOrden(idOrden, nuevoEstado);
-        response.sendRedirect("OrdenDeTrabajoServlet?action=detalle&id=" + idOrden);
+        orden.setDetalles(detalles);
+        return orden;
+    }
+
+   private void cambiarEstado(HttpServletRequest request, HttpServletResponse response)
+           throws ServletException, IOException {
+
+       try {
+           int id = Integer.parseInt(request.getParameter("id"));
+           int estadoId = Integer.parseInt(request.getParameter("estado"));
+
+           // Obtener la orden actual
+           OrdenDeTrabajo orden = ordenService.buscarPorId(id);
+           if (orden == null) {
+               response.sendError(HttpServletResponse.SC_NOT_FOUND, "Orden no encontrada");
+               return;
+           }
+
+           // Validar transición
+           if (!esTransicionValida(orden.getEstado().getId(), estadoId)) {
+               response.sendError(HttpServletResponse.SC_BAD_REQUEST,
+                   "No se puede cambiar el estado de una orden " + orden.getEstado().getDescripcion() +
+                   " al estado " + obtenerEstadoPorId(estadoId).getDescripcion());
+               return;
+           }
+
+           // Crear nuevo estado
+           Estado nuevoEstado = obtenerEstadoPorId(estadoId);
+
+           // Cambiar estado en el servicio
+           ordenService.cambiarEstadoOrden(id, nuevoEstado);
+
+           // Si se marca como entregada (estado 5), actualizar stock de repuestos
+           if (estadoId == 5) {
+               actualizarStockRepuestos(id);
+           }
+
+           // Redirigir a la página de detalle
+           response.sendRedirect("OrdenDeTrabajoServlet?action=detalle&id=" + id);
+
+       } catch (NumberFormatException e) {
+           response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Parámetros inválidos");
+       } catch (Exception e) {
+           e.printStackTrace();
+           response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Error interno del servidor");
+       }
+   }
+
+   private boolean esTransicionValida(int estadoActual, int nuevoEstado) {
+       // No permitir cambio al mismo estado
+       if (estadoActual == nuevoEstado) {
+           return false;
+       }
+
+       switch (estadoActual) {
+           case 1: // Recibida
+               return nuevoEstado == 2 || nuevoEstado == 6; // Solo a "En reparación" o "Cancelado"
+           case 2: // En reparación
+               return nuevoEstado == 3 || nuevoEstado == 4 || nuevoEstado == 6; // A "En espera", "Listo" o "Cancelado"
+           case 3: // En espera de repuestos
+               return nuevoEstado == 2 || nuevoEstado == 4 || nuevoEstado == 6; // A "En reparación", "Listo" o "Cancelado"
+           case 4: // Listo para entrega
+               return nuevoEstado == 5 || nuevoEstado == 6; // Solo a "Entregado" o "Cancelado"
+           case 5: // Entregado
+           case 6: // Cancelado
+               return false; // Estados finales, no se pueden cambiar
+           default:
+               return false;
+       }
+   }
+
+    private void actualizarStockRepuestos(int idOrden) throws IOException {
+        OrdenDeTrabajo orden = ordenService.buscarPorId(idOrden);
+
+        if (orden != null && orden.getDetalles() != null) {
+            for (DetalleOrden detalle : orden.getDetalles()) {
+                // Solo actualizar stock si es un repuesto
+                if (detalle.getTipoDetalle().getId() == 1) {
+                    // Buscar el repuesto por nombre
+                    List<Repuesto> repuestos = repuestoDAO.findAll();
+                    for (Repuesto repuesto : repuestos) {
+                        if (repuesto.getNombre().equals(detalle.getNombreRepuesto())) {
+                            int nuevaCantidad = repuesto.getCantidadDisponible() - detalle.getCantidad();
+
+                            if (nuevaCantidad <= 0) {
+                                // Eliminar repuesto si no queda stock
+                                repuestoDAO.delete(repuesto.getId());
+                            } else {
+                                // Actualizar cantidad
+                                repuesto.setCantidadDisponible(nuevaCantidad);
+                                repuestoDAO.save(repuesto);
+                            }
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+   private Estado obtenerEstadoPorId(int estadoId) {
+       switch (estadoId) {
+           case 1: return new Estado(1, "Recibida");
+           case 2: return new Estado(2, "En reparación");
+           case 3: return new Estado(3, "En espera de repuestos");
+           case 4: return new Estado(4, "Listo para entrega");
+           case 5: return new Estado(5, "Entregado");
+           case 6: return new Estado(6, "Cancelado");
+           default: throw new IllegalArgumentException("Estado no válido: " + estadoId);
+       }
+   }
+
+    private void mostrarDetalle(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+
+        int id = Integer.parseInt(request.getParameter("id"));
+        OrdenDeTrabajo orden = ordenService.buscarPorId(id);
+
+        if (orden == null) {
+            response.sendError(HttpServletResponse.SC_NOT_FOUND, "Orden no encontrada");
+            return;
+        }
+
+        // Determinar si se puede editar (estados 1, 2, 3, 4)
+        boolean puedeEditar = orden.getEstado().getId() < 5;
+
+        request.setAttribute("orden", orden);
+        request.setAttribute("puedeEditar", puedeEditar);
+        request.getRequestDispatcher("ordenes/detalle.jsp").forward(request, response);
     }
 
     private void eliminarOrden(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        int idOrden = Integer.parseInt(request.getParameter("id"));
 
-        // Verificar si la orden existe antes de eliminar
-        OrdenDeTrabajo orden = ordenService.buscarPorId(idOrden);
-        if (orden == null) {
-            request.setAttribute("error", "La orden de trabajo no existe");
-            listarOrdenes(request, response);
-            return;
+        int id = Integer.parseInt(request.getParameter("id"));
+
+        try {
+            ordenService.borrarOrden(id);
+            response.sendRedirect("OrdenDeTrabajoServlet");
+        } catch (Exception e) {
+            response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR,
+                    "Error eliminando orden: " + e.getMessage());
         }
-
-        // Eliminar la orden
-        ordenService.borrarOrden(idOrden);
-        response.sendRedirect("OrdenDeTrabajoServlet");
     }
 
-    private void cargarDatosFormulario(HttpServletRequest request) {
-        try {
-            // Obtener vehículos como Object[] con placa, marca, estilo, dueño
-            List<Vehiculo> vehiculosList = vehiculoService.listarVehiculos();
-            List<Object[]> vehiculos = vehiculosList.stream()
-                    .map(v -> new Object[]{v.getNumeroPlaca(), v.getMarca(), v.getEstilo(), v.getDuenio()})
-                    .toList();
+    private void listarOrdenes(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
 
-            // Obtener clientes como Object[] con id, nombre, apellido
-            List<Cliente> clientesList = clienteService.listarClientes();
-            List<Object[]> clientes = clientesList.stream()
-                    .map(c -> new Object[]{c.getId(), c.getNombre(), c.getPrimerApellido(), c.getSegundoApellido()})
-                    .toList();
+        String filtro = request.getParameter("filtro");
+        List<OrdenDeTrabajo> ordenes = ordenService.listarOrdenes();
 
-            request.setAttribute("vehiculos", vehiculos);
-            request.setAttribute("clientes", clientes);
-        } catch (Exception e) {
-            System.err.println("Error cargando datos para formulario: " + e.getMessage());
-            request.setAttribute("vehiculos", new ArrayList<>());
-            request.setAttribute("clientes", new ArrayList<>());
+        if (filtro != null && !filtro.trim().isEmpty()) {
+            String filtroLower = filtro.trim().toLowerCase();
+            ordenes = ordenes.stream()
+                    .filter(orden ->
+                            String.valueOf(orden.getIdOrden()).contains(filtroLower) ||
+                                    orden.getNumeroPlaca().toLowerCase().contains(filtroLower) ||
+                                    String.valueOf(orden.getIdCliente()).contains(filtroLower) ||
+                                    orden.getDescripcionSolicitud().toLowerCase().contains(filtroLower))
+                    .toList();
         }
+
+        request.setAttribute("ordenes", ordenes);
+        request.getRequestDispatcher("ordenes/lista.jsp").forward(request, response);
     }
 }

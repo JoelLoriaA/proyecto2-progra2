@@ -29,11 +29,12 @@
         th { background-color: #2a2a2a; color: #ff3c00; font-weight: 600; }
         tr:hover { background-color: #2d2d2d; }
         .estado { padding: 4px 8px; border-radius: 12px; font-size: 12px; font-weight: bold; }
-        .estado-1 { background-color: #3498db; color: white; }
+       .estado-1 { background-color: #3498db; color: white; }
         .estado-2 { background-color: #f39c12; color: white; }
-        .estado-3 { background-color: #27ae60; color: white; }
-        .estado-4 { background-color: #95a5a6; color: white; }
-        .estado-5 { background-color: #e74c3c; color: white; }
+        .estado-3 { background-color: #e74c3c; color: white; }
+        .estado-4 { background-color: #28a745; color: white; }
+        .estado-5 { background-color: #6c757d; color: white; }
+        .estado-6 { background-color: #dc3545; color: white; }
         .action-btn { display: inline-block; text-decoration: none; padding: 6px 10px; margin: 2px; border-radius: 4px; font-weight: bold; font-size: 12px; color: white; }
         .view-btn { background-color: #3498db; }
         .view-btn:hover { background-color: #2980b9; }
@@ -89,7 +90,7 @@
            <a class="action-btn view-btn" href="OrdenDeTrabajoServlet?action=detalle&id=<%= orden.getIdOrden() %>">
                 <i class="fas fa-eye"></i> Ver
             </a>
-            <% if (orden.getEstado().getId() < 4) { %>
+            <% if (orden.getEstado().getId() < 5) { %>
             <a class="action-btn edit-btn" href="OrdenDeTrabajoServlet?action=editar&id=<%= orden.getIdOrden() %>">
                 <i class="fas fa-edit"></i> Editar
             </a>

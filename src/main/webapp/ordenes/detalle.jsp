@@ -30,8 +30,9 @@
             .estado-1 { background-color: #3498db; color: white; }
             .estado-2 { background-color: #f39c12; color: white; }
             .estado-3 { background-color: #27ae60; color: white; }
-            .estado-4 { background-color: #95a5a6; color: white; }
-            .estado-5 { background-color: #e74c3c; color: white; }
+            .estado-4 { background-color: #28a745; color: white; }
+            .estado-5 { background-color: #6c757d; color: white; }
+            .estado-6 { background-color: #e74c3c; color: white; }
             .estado-controls { margin-top: 15px; }
             .estado-controls select { padding: 8px; border-radius: 5px; background: #2c2c2c; color: #fff; border: 1px solid #444; margin-right: 10px; }
             .estado-controls button { padding: 8px 15px; background: #ff3c00; color: white; border: none; border-radius: 5px; cursor: pointer; }
@@ -105,14 +106,28 @@
                         <%= orden.getEstado().getDescripcion() %>
                     </span>
                 </div>
-                <% if (orden.getEstado().getId() < 4) { %>
+                <% if (orden.getEstado().getId() < 5) { %>
                 <div class="estado-controls">
                     <select id="nuevoEstado">
-                        <option value="1" <%= orden.getEstado().getId() == 1 ? "selected" : "" %>>Recibida</option>
-                        <option value="2" <%= orden.getEstado().getId() == 2 ? "selected" : "" %>>En reparación</option>
-                        <option value="3" <%= orden.getEstado().getId() == 3 ? "selected" : "" %>>En espera de repuestos</option>
-                        <option value="4">Marcar como Entregado</option>
-                        <option value="5">Cancelar Orden</option>
+                        <option value="<%= orden.getEstado().getId() %>" selected><%= orden.getEstado().getDescripcion() %></option>
+                        <%
+                        int estadoActual = orden.getEstado().getId();
+                        if (estadoActual == 1) { // Recibida
+                        %>
+                            <option value="2">En reparación</option>
+                            <option value="6">Cancelar Orden</option>
+                        <% } else if (estadoActual == 2) { // En reparación %>
+                            <option value="3">En espera de repuestos</option>
+                            <option value="4">Listo para entrega</option>
+                            <option value="6">Cancelar Orden</option>
+                        <% } else if (estadoActual == 3) { // En espera de repuestos %>
+                            <option value="2">En reparación</option>
+                            <option value="4">Listo para entrega</option>
+                            <option value="6">Cancelar Orden</option>
+                        <% } else if (estadoActual == 4) { // Listo para entrega %>
+                            <option value="5">Marcar como Entregado</option>
+                            <option value="6">Cancelar Orden</option>
+                        <% } %>
                     </select>
                     <button onclick="cambiarEstado()">
                         <i class="fas fa-sync-alt"></i> Cambiar Estado
@@ -254,9 +269,9 @@
 
         let mensaje = '¿Está seguro de cambiar el estado a "' + estadoTexto + '"?';
 
-        if (nuevoEstado === '4') {
-            mensaje += '\n\nAl marcar como "Entregado", no se podrán agregar más repuestos/servicios.';
-        } else if (nuevoEstado === '5') {
+        if (nuevoEstado === '5') {
+            mensaje += '\n\nAl marcar como "Entregado", se descontará el stock de repuestos utilizados y no se podrán agregar más repuestos/servicios.';
+        } else if (nuevoEstado === '6') {
             mensaje += '\n\nAl cancelar la orden, no se podrán realizar más modificaciones.';
         }
 
