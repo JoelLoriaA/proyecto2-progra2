@@ -221,9 +221,6 @@
             <a class="action-btn edit-link" href="ClienteServlet?action=edit&id=<%= c.getId() %><%= filtroParam %>">Editar</a>
             <a class="action-btn delete-link" href="ClienteServlet?action=delete&id=<%= c.getId() %><%= filtroParam %>"
                onclick="return confirm('¿Eliminar este cliente?')">Borrar</a>
-            <% if (tieneEmail) { %>
-                <a class="action-btn email-link" href="mailto:<%= c.getEmail() %>">Contactar</a>
-            <% } %>
         </td>
     </tr>
 <%

@@ -94,6 +94,15 @@ public class ClienteServlet extends HttpServlet {
             String direccion = request.getParameter("direccion");
             String email = request.getParameter("email");
 
+            // Validar formato de email
+            if (!email.matches("^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$")) {
+                Cliente cliente = new Cliente(id, nombre, primerApellido, segundoApellido, telefono, direccion, email);
+                request.setAttribute("cliente", cliente);
+                request.setAttribute("error", "El formato del correo electrónico no es válido.");
+                request.getRequestDispatcher("clientes/formulario.jsp").forward(request, response);
+                return;
+            }
+
             Cliente cliente = new Cliente(id, nombre, primerApellido, segundoApellido, telefono, direccion, email);
 
             boolean duplicado = clienteDAO.findAll().stream()
@@ -109,7 +118,6 @@ public class ClienteServlet extends HttpServlet {
 
             clienteDAO.save(cliente);
 
-            // Redirigir respetando el filtro si existe
             String filtro = request.getParameter("filtro");
             if (filtro != null && !filtro.trim().isEmpty()) {
                 response.sendRedirect("ClienteServlet?filtro=" + filtro.trim());

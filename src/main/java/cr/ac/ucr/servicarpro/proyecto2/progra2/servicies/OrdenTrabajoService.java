@@ -36,24 +36,6 @@ public class OrdenTrabajoService {
         return ordenDAO.findByKey(idOrden).orElse(null);
     }
 
-    public List<OrdenDeTrabajo> buscarPorEstado(Estado estado) {
-        return ordenDAO.findAll().stream()
-                .filter(orden -> orden.getEstado().getId() == estado.getId())
-                .collect(Collectors.toList());
-    }
-
-    public List<OrdenDeTrabajo> buscarPorVehiculo(String numeroPlaca) {
-        return ordenDAO.findAll().stream()
-                .filter(orden -> orden.getNumeroPlaca().equals(numeroPlaca))
-                .collect(Collectors.toList());
-    }
-
-    public List<OrdenDeTrabajo> buscarPorCliente(int idCliente) {
-        return ordenDAO.findAll().stream()
-                .filter(orden -> orden.getIdCliente() == idCliente)
-                .collect(Collectors.toList());
-    }
-
     public void crearOrden(OrdenDeTrabajo orden) throws IOException {
         try {
             validarNuevaOrden(orden);
@@ -95,22 +77,6 @@ public class OrdenTrabajoService {
         } catch (XmlRepositoryException e) {
             throw new XmlRepositoryException("Error cambiando estado de orden", e);
         }
-    }
-
-    public void iniciarReparacion(int idOrden) throws IOException {
-        cambiarEstadoOrden(idOrden, new Estado(2, "En reparación"));
-    }
-
-    public void marcarListoParaEntrega(int idOrden) throws IOException {
-        cambiarEstadoOrden(idOrden, new Estado(3, "Listo para entrega"));
-    }
-
-    public void entregarOrden(int idOrden) throws IOException {
-        cambiarEstadoOrden(idOrden, new Estado(4, "Entregado"));
-    }
-
-    public void cancelarOrden(int idOrden) throws IOException {
-        cambiarEstadoOrden(idOrden, new Estado(5, "Cancelado"));
     }
 
     public void borrarOrden(int idOrden) {
