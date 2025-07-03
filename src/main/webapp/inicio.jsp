@@ -167,16 +167,7 @@
         <p>Gestionar stock y pedidos de repuestos.</p>
         <a href="RepuestoServlet">Ver Repuestos</a>
     </div>
-    
-    <div class="card">
-        <i class="fas fa-shopping-cart"></i> 
-        <h3>Órdenes de compra</h3>
-        <p>Administrar repuestos y servicios asociados a una orden de compra.</p>
-        <a href="RepuestoServlet">Ver órdenes de compra</a>
-    </div>
 
-    
-   
     <div class="card">
         <i class="fas fa-chart-bar"></i>
         <h3>Reportes</h3>

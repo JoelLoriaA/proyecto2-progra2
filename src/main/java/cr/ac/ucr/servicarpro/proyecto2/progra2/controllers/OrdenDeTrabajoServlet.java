@@ -210,49 +210,55 @@ public class OrdenDeTrabajoServlet extends HttpServlet {
         return orden;
     }
 
-   private void cambiarEstado(HttpServletRequest request, HttpServletResponse response)
-           throws ServletException, IOException {
+  private void cambiarEstado(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 
-       try {
-           int id = Integer.parseInt(request.getParameter("id"));
-           int estadoId = Integer.parseInt(request.getParameter("estado"));
+      try {
+          int id = Integer.parseInt(request.getParameter("id"));
+          int estadoId = Integer.parseInt(request.getParameter("estado"));
 
-           // Obtener la orden actual
-           OrdenDeTrabajo orden = ordenService.buscarPorId(id);
-           if (orden == null) {
-               response.sendError(HttpServletResponse.SC_NOT_FOUND, "Orden no encontrada");
-               return;
-           }
+          // Obtener la orden actual
+          OrdenDeTrabajo orden = ordenService.buscarPorId(id);
+          if (orden == null) {
+              response.sendError(HttpServletResponse.SC_NOT_FOUND, "Orden no encontrada");
+              return;
+          }
 
-           // Validar transición
-           if (!esTransicionValida(orden.getEstado().getId(), estadoId)) {
-               response.sendError(HttpServletResponse.SC_BAD_REQUEST,
-                   "No se puede cambiar el estado de una orden " + orden.getEstado().getDescripcion() +
-                   " al estado " + obtenerEstadoPorId(estadoId).getDescripcion());
-               return;
-           }
+          // Validar transición
+          if (!esTransicionValida(orden.getEstado().getId(), estadoId)) {
+              response.sendError(HttpServletResponse.SC_BAD_REQUEST,
+                  "No se puede cambiar el estado de una orden " + orden.getEstado().getDescripcion() +
+                  " al estado " + obtenerEstadoPorId(estadoId).getDescripcion());
+              return;
+          }
 
-           // Crear nuevo estado
-           Estado nuevoEstado = obtenerEstadoPorId(estadoId);
+          // Crear nuevo estado
+          Estado nuevoEstado = obtenerEstadoPorId(estadoId);
 
-           // Cambiar estado en el servicio
-           ordenService.cambiarEstadoOrden(id, nuevoEstado);
+          // Cambiar estado en el servicio primero
+          ordenService.cambiarEstadoOrden(id, nuevoEstado);
 
-           // Si se marca como entregada (estado 5), actualizar stock de repuestos
-           if (estadoId == 5) {
-               actualizarStockRepuestos(id);
-           }
+          // Si se marca como entregada (estado 5), intentar actualizar stock de repuestos
+          if (estadoId == 5) {
+              try {
+                  actualizarStockRepuestos(id);
+              } catch (Exception e) {
+                  // Log del error pero continuar con el proceso
+                  e.printStackTrace();
+                  System.err.println("Advertencia: No se pudo actualizar el stock de repuestos: " + e.getMessage());
+              }
+          }
 
-           // Redirigir a la página de detalle
-           response.sendRedirect("OrdenDeTrabajoServlet?action=detalle&id=" + id);
+          // Redirigir a la página de detalle
+          response.sendRedirect("OrdenDeTrabajoServlet?action=detalle&id=" + id);
 
-       } catch (NumberFormatException e) {
-           response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Parámetros inválidos");
-       } catch (Exception e) {
-           e.printStackTrace();
-           response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Error interno del servidor");
-       }
-   }
+      } catch (NumberFormatException e) {
+          response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Parámetros inválidos");
+      } catch (Exception e) {
+          e.printStackTrace();
+          response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR,
+              "Error cambiando estado de la orden: " + e.getMessage());
+      }
+  }
 
    private boolean esTransicionValida(int estadoActual, int nuevoEstado) {
        // No permitir cambio al mismo estado
@@ -261,54 +267,62 @@ public class OrdenDeTrabajoServlet extends HttpServlet {
        }
 
        switch (estadoActual) {
-           case 1: // Recibida
-               return nuevoEstado == 2 || nuevoEstado == 6; // Solo a "En reparación" o "Cancelado"
+           case 1: // Diagnóstico
+               return nuevoEstado == 2 || nuevoEstado == 3 || nuevoEstado == 6; // En reparación, En espera de repuestos, Cancelado
            case 2: // En reparación
-               return nuevoEstado == 3 || nuevoEstado == 4 || nuevoEstado == 6; // A "En espera", "Listo" o "Cancelado"
+               return nuevoEstado == 3 || nuevoEstado == 4 || nuevoEstado == 6; // En espera de repuestos, Listo para entrega, Cancelado
            case 3: // En espera de repuestos
-               return nuevoEstado == 2 || nuevoEstado == 4 || nuevoEstado == 6; // A "En reparación", "Listo" o "Cancelado"
+               return nuevoEstado == 2 || nuevoEstado == 4 || nuevoEstado == 6; // En reparación, Listo para entrega, Cancelado
            case 4: // Listo para entrega
-               return nuevoEstado == 5 || nuevoEstado == 6; // Solo a "Entregado" o "Cancelado"
+               return nuevoEstado == 5 || nuevoEstado == 6; // Entregado, Cancelado
            case 5: // Entregado
+               return false; // No se puede cambiar el estado de una orden ya entregada
            case 6: // Cancelado
-               return false; // Estados finales, no se pueden cambiar
+               return false; // No se puede cambiar el estado de una orden cancelada
            default:
-               return false;
+               throw new IllegalArgumentException("Estado no válido: " + estadoActual);
        }
    }
 
     private void actualizarStockRepuestos(int idOrden) throws IOException {
-        OrdenDeTrabajo orden = ordenService.buscarPorId(idOrden);
+        try {
+            OrdenDeTrabajo orden = ordenService.buscarPorId(idOrden);
 
-        if (orden != null && orden.getDetalles() != null) {
-            for (DetalleOrden detalle : orden.getDetalles()) {
-                // Solo actualizar stock si es un repuesto
-                if (detalle.getTipoDetalle().getId() == 1) {
-                    // Buscar el repuesto por nombre
-                    List<Repuesto> repuestos = repuestoDAO.findAll();
-                    for (Repuesto repuesto : repuestos) {
-                        if (repuesto.getNombre().equals(detalle.getNombreRepuesto())) {
-                            int nuevaCantidad = repuesto.getCantidadDisponible() - detalle.getCantidad();
+            if (orden != null && orden.getDetalles() != null) {
+                for (DetalleOrden detalle : orden.getDetalles()) {
+                    // Solo actualizar stock si es un repuesto
+                    if (detalle.getTipoDetalle().getId() == 1) {
+                        // Buscar el repuesto por nombre
+                        List<Repuesto> repuestos = repuestoDAO.findAll();
+                        for (Repuesto repuesto : repuestos) {
+                            if (repuesto.getNombre().equals(detalle.getNombreRepuesto())) {
+                                int nuevaCantidad = repuesto.getCantidadDisponible() - detalle.getCantidad();
 
-                            if (nuevaCantidad <= 0) {
-                                // Eliminar repuesto si no queda stock
-                                repuestoDAO.delete(repuesto.getId());
-                            } else {
-                                // Actualizar cantidad
-                                repuesto.setCantidadDisponible(nuevaCantidad);
-                                repuestoDAO.save(repuesto);
+                                if (nuevaCantidad <= 0) {
+                                    // Si no queda stock, establecer cantidad en 0 en lugar de eliminar
+                                    repuesto.setCantidadDisponible(0);
+                                    repuestoDAO.save(repuesto);
+                                } else {
+                                    // Actualizar cantidad
+                                    repuesto.setCantidadDisponible(nuevaCantidad);
+                                    repuestoDAO.save(repuesto);
+                                }
+                                break;
                             }
-                            break;
                         }
                     }
                 }
             }
+        } catch (Exception e) {
+            // Log del error pero no detener el proceso de cambio de estado
+            e.printStackTrace();
+            System.err.println("Error actualizando stock de repuestos: " + e.getMessage());
         }
     }
 
    private Estado obtenerEstadoPorId(int estadoId) {
        switch (estadoId) {
-           case 1: return new Estado(1, "Recibida");
+           case 1: return new Estado(1, "Diagnóstico");
            case 2: return new Estado(2, "En reparación");
            case 3: return new Estado(3, "En espera de repuestos");
            case 4: return new Estado(4, "Listo para entrega");

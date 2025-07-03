@@ -106,30 +106,37 @@
                         <%= orden.getEstado().getDescripcion() %>
                     </span>
                 </div>
-                <% if (orden.getEstado().getId() < 5) { %>
+               <% if (orden.getEstado().getId() < 5) { %>
                 <div class="estado-controls">
-                    <select id="nuevoEstado">
-                        <option value="<%= orden.getEstado().getId() %>" selected><%= orden.getEstado().getDescripcion() %></option>
+                    <select id="nuevoEstado" name="nuevoEstado">
                         <%
                         int estadoActual = orden.getEstado().getId();
-                        if (estadoActual == 1) { // Recibida
+                        if (estadoActual == 1) { // Diagnóstico
                         %>
                             <option value="2">En reparación</option>
-                            <option value="6">Cancelar Orden</option>
+                            <option value="6">Cancelado</option>
                         <% } else if (estadoActual == 2) { // En reparación %>
+                            <option value="2" selected>En reparación</option>
                             <option value="3">En espera de repuestos</option>
                             <option value="4">Listo para entrega</option>
-                            <option value="6">Cancelar Orden</option>
+                            <option value="6">Cancelado</option>
                         <% } else if (estadoActual == 3) { // En espera de repuestos %>
+                            <option value="3" selected>En espera de repuestos</option>
                             <option value="2">En reparación</option>
                             <option value="4">Listo para entrega</option>
-                            <option value="6">Cancelar Orden</option>
+                            <option value="6">Cancelado</option>
                         <% } else if (estadoActual == 4) { // Listo para entrega %>
-                            <option value="5">Marcar como Entregado</option>
-                            <option value="6">Cancelar Orden</option>
+                            <option value="4" selected>Listo para entrega</option>
+                            <option value="5">Entregado</option>
+                            <option value="6">Cancelado</option>
+                        <% } else if (estadoActual == 5) { // Entregado %>
+                            <option value="5" selected>Entregado</option>
+                            <option value="6">Cancelado</option>
+                        <% } else if (estadoActual == 6) { // Cancelado %>
+                            <option value="6" selected>Cancelado</option>
                         <% } %>
                     </select>
-                    <button onclick="cambiarEstado()">
+                    <button type="button" onclick="cambiarEstado()" class="btn btn-primary">
                         <i class="fas fa-sync-alt"></i> Cambiar Estado
                     </button>
                 </div>

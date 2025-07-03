@@ -3,9 +3,9 @@ package cr.ac.ucr.servicarpro.proyecto2.progra2.controllers;
 import cr.ac.ucr.servicarpro.proyecto2.progra2.data.dao.ClienteDAO;
 import cr.ac.ucr.servicarpro.proyecto2.progra2.data.dao.RepuestoDAO;
 import cr.ac.ucr.servicarpro.proyecto2.progra2.data.dao.ServicioDAO;
-import cr.ac.ucr.servicarpro.proyecto2.progra2.domain.Cliente;
-import cr.ac.ucr.servicarpro.proyecto2.progra2.domain.Repuesto;
-import cr.ac.ucr.servicarpro.proyecto2.progra2.domain.Servicio;
+import cr.ac.ucr.servicarpro.proyecto2.progra2.data.dao.VehiculoDAO;
+import cr.ac.ucr.servicarpro.proyecto2.progra2.data.dao.OrdenDeTrabajoDAO;
+import cr.ac.ucr.servicarpro.proyecto2.progra2.domain.*;
 import org.jdom2.JDOMException;
 
 import jakarta.servlet.ServletException;
@@ -26,23 +26,45 @@ public class ReporteServlet extends HttpServlet {
             ClienteDAO clienteDAO = new ClienteDAO();
             ServicioDAO servicioDAO = new ServicioDAO();
             RepuestoDAO repuestoDAO = new RepuestoDAO();
+            VehiculoDAO vehiculoDAO = new VehiculoDAO();
+            OrdenDeTrabajoDAO ordenDAO = new OrdenDeTrabajoDAO();
 
             List<Cliente> clientes = clienteDAO.findAll();
             List<Servicio> servicios = servicioDAO.findAll();
             List<Repuesto> repuestos = repuestoDAO.findAll();
+            List<Vehiculo> vehiculos = vehiculoDAO.findAll();
+            List<OrdenDeTrabajo> ordenes = ordenDAO.findAll();
 
+            // Estadísticas existentes
             int totalClientes = clientes.size();
             double totalIngresosServicios = servicios.stream()
                     .mapToDouble(s -> s.getPrecio() + s.getCostoManoObra()).sum();
             double totalValorRepuestos = repuestos.stream()
                     .mapToDouble(r -> r.getPrecio() * r.getCantidadDisponible()).sum();
 
+            // Nuevas estadísticas
+            int totalVehiculos = vehiculos.size();
+            int totalOrdenes = ordenes.size();
+            long ordenesActivas = ordenes.stream()
+                    .filter(o -> o.getEstado().getId() < 5).count(); // Estados 1-4 son activos
+            double totalIngresosPorOrdenes = ordenes.stream()
+                    .filter(o -> o.getEstado().getId() == 5) // Solo órdenes entregadas
+                    .flatMap(o -> o.getDetalles().stream())
+                    .mapToDouble(d -> (d.getCantidad() * d.getPrecio()) + d.getCostoManoObra())
+                    .sum();
+
             request.setAttribute("clientes", clientes);
             request.setAttribute("servicios", servicios);
             request.setAttribute("repuestos", repuestos);
+            request.setAttribute("vehiculos", vehiculos);
+            request.setAttribute("ordenes", ordenes);
             request.setAttribute("totalClientes", totalClientes);
             request.setAttribute("totalIngresosServicios", totalIngresosServicios);
             request.setAttribute("totalValorRepuestos", totalValorRepuestos);
+            request.setAttribute("totalVehiculos", totalVehiculos);
+            request.setAttribute("totalOrdenes", totalOrdenes);
+            request.setAttribute("ordenesActivas", ordenesActivas);
+            request.setAttribute("totalIngresosPorOrdenes", totalIngresosPorOrdenes);
 
             request.getRequestDispatcher("reportes/reporte.jsp").forward(request, response);
 
@@ -50,5 +72,4 @@ public class ReporteServlet extends HttpServlet {
             throw new ServletException("Error al cargar datos para el reporte", e);
         }
     }
-
 }

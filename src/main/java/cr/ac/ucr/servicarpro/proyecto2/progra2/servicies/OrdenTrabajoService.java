@@ -177,27 +177,39 @@ public class OrdenTrabajoService {
     private void validarCambioEstado(Estado estadoActual, Estado nuevoEstado) {
         int estadoActualId = estadoActual.getId();
         int nuevoEstadoId = nuevoEstado.getId();
+        if (estadoActualId == 5 || estadoActualId == 6) {
+            throw new IllegalArgumentException("No se puede cambiar el estado de una orden " +
+                    (estadoActualId == 5 ? "Entregada" : "Cancelada"));
+        }
 
-        // Definir transiciones válidas de estado
+        // Validar transiciones válidas
         switch (estadoActualId) {
             case 1: // Diagnóstico
-                if (nuevoEstadoId != 2 && nuevoEstadoId != 5) { // En reparación o Cancelado
+                if (nuevoEstadoId != 2 && nuevoEstadoId != 6) {
                     throw new IllegalArgumentException("Desde Diagnóstico solo se puede cambiar a En reparación o Cancelado");
                 }
                 break;
+
             case 2: // En reparación
-                if (nuevoEstadoId != 3 && nuevoEstadoId != 5) { // Listo para entrega o Cancelado
-                    throw new IllegalArgumentException("Desde En reparación solo se puede cambiar a Listo para entrega o Cancelado");
+                if (nuevoEstadoId != 3 && nuevoEstadoId != 4 && nuevoEstadoId != 6) {
+                    throw new IllegalArgumentException("Desde En reparación solo se puede cambiar a Esperando repuestos, Listo para entrega o Cancelado");
                 }
                 break;
-            case 3: // Listo para entrega
-                if (nuevoEstadoId != 4) { // Entregado
-                    throw new IllegalArgumentException("Desde Listo para entrega solo se puede cambiar a Entregado");
+
+            case 3: // Esperando repuestos
+                if (nuevoEstadoId != 2 && nuevoEstadoId != 4 && nuevoEstadoId != 6) {
+                    throw new IllegalArgumentException("Desde Esperando repuestos solo se puede cambiar a En reparación, Listo para entrega o Cancelado");
                 }
                 break;
-            case 4: // Entregado
-            case 5: // Cancelado
-                throw new IllegalArgumentException("No se puede cambiar el estado de una orden " + estadoActual.getDescripcion());
+
+            case 4: // Listo para entrega
+                if (nuevoEstadoId != 5 && nuevoEstadoId != 6) {
+                    throw new IllegalArgumentException("Desde Listo para entrega solo se puede cambiar a Entregado o Cancelado");
+                }
+                break;
+
+            default:
+                throw new IllegalArgumentException("Estado actual no válido: " + estadoActualId);
         }
     }
 }
